@@ -6,7 +6,6 @@ import com.stylefeng.guns.rest.common.CurrentUser;
 import com.stylefeng.guns.rest.common.exception.BizExceptionEnum;
 import com.stylefeng.guns.rest.config.properties.JwtProperties;
 import com.stylefeng.guns.rest.modular.auth.util.JwtTokenUtil;
-import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import io.jsonwebtoken.JwtException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,17 +52,12 @@ if(request.getServletPath().startsWith(ignoreUrls[i])){
         }
 
 
-        final String requestHeader = request.getHeader(jwtProperties.getHeader());
+        final String requestHeader
+                = request.getHeader(jwtProperties.getHeader());
         String authToken = null;
         if (requestHeader != null && requestHeader.startsWith("Bearer ")) {
             authToken = requestHeader.substring(7);
 //通过Token获取userId，并且将之存入ThreadLocal,以便后续业务调用
-        String userId=    jwtTokenUtil.getUsernameFromToken(authToken);
-        if(userId==null){
-            return;
-        }else {
-            CurrentUser.saveUserId(userId);
-        }
             //验证token是否过期,包含了验证jwt是否正确
             try {
                 boolean flag = jwtTokenUtil.isTokenExpired(authToken);
@@ -76,6 +70,13 @@ if(request.getServletPath().startsWith(ignoreUrls[i])){
                 RenderUtil.renderJson(response, new ErrorTip(BizExceptionEnum.TOKEN_ERROR.getCode(), BizExceptionEnum.TOKEN_ERROR.getMessage()));
                 return;
             }
+        String userId=    jwtTokenUtil.getUsernameFromToken(authToken);
+        if(userId==null){
+            return;
+        }else {
+            CurrentUser.saveUserId(userId);
+        }
+
         } else {
             //header没有带Bearer字段
             RenderUtil.renderJson(response, new ErrorTip(BizExceptionEnum.TOKEN_ERROR.getCode(), BizExceptionEnum.TOKEN_ERROR.getMessage()));

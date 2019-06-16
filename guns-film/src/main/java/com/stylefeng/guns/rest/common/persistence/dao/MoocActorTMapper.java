@@ -1,5 +1,6 @@
 package com.stylefeng.guns.rest.common.persistence.dao;
 
+import com.stylefeng.guns.api.film.vo.ActorNameAndRoleNameVO;
 import com.stylefeng.guns.api.film.vo.ActorVO;
 import com.stylefeng.guns.rest.common.persistence.model.MoocActorT;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -17,4 +18,7 @@ import java.util.List;
  */
 public interface MoocActorTMapper extends BaseMapper<MoocActorT> {
 List<ActorVO> getActors(@Param("filmId") String filmId);
+ActorVO getActorName(@Param("filmId") String filmId);
+int insertAndGetId(@Param("moocActorT")MoocActorT moocActorT);
+    List<ActorNameAndRoleNameVO> getActorNameAndRoleName(String filmId);
 }
