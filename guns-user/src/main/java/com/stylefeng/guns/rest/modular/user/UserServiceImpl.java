@@ -20,10 +20,10 @@ public class UserServiceImpl implements UserAPI {
 @Autowired
 private MoocUserTMapper moocUserTMapper;
     @Override
-    public int login(String username, String password) {
+    public int login(String email, String password) {
         // 根据登陆账号获取数据库信息
         MoocUserT moocUserT = new MoocUserT();
-        moocUserT.setUserName(username);
+        moocUserT.setEmail(email);
 
         MoocUserT result = moocUserTMapper.selectOne(moocUserT);
 
@@ -72,6 +72,18 @@ private MoocUserTMapper moocUserTMapper;
             return true;
         }
 
+    }
+
+    @Override
+    public boolean checkEmail(String email) {
+        EntityWrapper<MoocUserT> entityWrapper=new EntityWrapper<>();
+        entityWrapper.eq("email",email);
+        Integer result=moocUserTMapper.selectCount(entityWrapper);
+        if(result!=null&&result>0){
+            return false;
+        }else {
+            return true;
+        }
     }
 
     private UserInfoModel do2UserInfo(MoocUserT moocUserT){

@@ -28,4 +28,11 @@ public interface CinemaServiceAPI {
 该部分是订单模块需要的内容
  */
 OrderQueryVO getOrderNeeds(int fieldId);
+//获取点击电影进入的影院列表
+Page<CinemaWithFilmVO> getCinemasByFilmId(String filmId,String releaseDate,String pageIndex,String pageSize);
+//获取影院所对应的电影信息
+    CinemaFilmVO getFilmsWithCinemaId(String cinemaId);
+    //根据场次id获电影开始时间,及订单创建时间
+    long getShowTime(String fieldId);
+
 }

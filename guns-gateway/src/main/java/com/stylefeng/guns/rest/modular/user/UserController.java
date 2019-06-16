@@ -33,19 +33,30 @@ public class UserController {
         }
     }
 
-    @RequestMapping(value = "check", method = RequestMethod.POST)
-    public ResponseVO check(String username) {
+    @RequestMapping(value = "check", method = RequestMethod.GET)
+    public ResponseVO check(String username,String email) {
         if (username != null && username.trim().length() > 0) {
-            //当返回true时候，表示用户名可用
-            boolean notExists = userAPI.checkUsername(username);
-            if (notExists) {
-                return ResponseVO.success("用户名不存在");
-            } else {
-                return ResponseVO.serviceFail("用户名已存在");
+            if(email!=null&&email.trim().length()>0){
+                //当返回true时候，表示用户名可用
+                boolean usernameExists = userAPI.checkUsername(username);
+                boolean emailExists=userAPI.checkEmail(email);
+                if (usernameExists&&emailExists) {
+                    return ResponseVO.success("用户名及邮箱都不存在");
+                } else if(!usernameExists&&emailExists){
+                    return ResponseVO.serviceFail("用户名已存在");
+                }else if(usernameExists&&!emailExists){
+                    return ResponseVO.serviceFail("邮箱已存在");
+                }else if(!usernameExists&&!emailExists){
+                    return ResponseVO.serviceFail("用户名和邮箱都已存在");
+                }
+            }else {
+                return ResponseVO.serviceFail("邮箱不能为空");
             }
+
         } else {
             return ResponseVO.serviceFail("用户名不能为空");
         }
+ return ResponseVO.appFail("系统异常");
     }
 
     @RequestMapping(value = "logout", method = RequestMethod.GET)

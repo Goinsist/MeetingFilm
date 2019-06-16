@@ -4,15 +4,20 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.film.FilmServiceApi;
+import com.stylefeng.guns.api.film.exception.FilmException;
 import com.stylefeng.guns.api.film.vo.*;
 import com.stylefeng.guns.core.util.DateUtil;
+import com.stylefeng.guns.core.util.QiniuCloudUtil;
+import com.stylefeng.guns.rest.common.exception.FilmExceptionEnum;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
 import com.stylefeng.guns.rest.common.persistence.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 @Component
 @Service(interfaceClass = FilmServiceApi.class)
 public class DefaultFilmServiceImpl implements FilmServiceApi {
@@ -30,7 +35,12 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
     private MoocFilmInfoTMapper moocFilmInfoTMapper;
     @Autowired
     private MoocActorTMapper moocActorTMapper;
+    @Autowired
+    private MoocTypeDictTMapper moocTypeDictTMapper;
+    @Autowired
+    private MoocFilmActorTMapper moocFilmActorTMapper;
 
+    private static final SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
     @Override
     public List<BannerVo> getBanners() {
         List<BannerVo> result=new ArrayList<>();
@@ -49,10 +59,16 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
 
     private List<FilmInfo> getFilmInfos(List<MoocFilmT> moocFilms){
         List<FilmInfo> filmInfos=new ArrayList<>();
+        MoocFilmInfoT moocFilmInfoT=new MoocFilmInfoT();
         for(MoocFilmT moocFilmT:moocFilms){
             FilmInfo filmInfo=new FilmInfo();
 
-            filmInfo.setImgAddress(moocFilmT.getImgAddress());
+            moocFilmInfoT.setFilmId(moocFilmT.getUuid()+"");
+            MoocFilmInfoT moocFilmInfoT1 = moocFilmInfoTMapper.selectOne(moocFilmInfoT);
+            MoocActorT moocActorT = moocActorTMapper.selectById(moocFilmInfoT1.getDirectorId());
+           filmInfo.setDirectorName(moocActorT.getActorName());
+
+            filmInfo.setImgAddress("http://img.gongyu91.cn"+moocFilmT.getImgAddress());
             if(moocFilmT.getFilmBoxOffice()==null){
                 filmInfo.setBoxNum(0);
             }else {
@@ -62,6 +78,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
             filmInfo.setExpectNum(moocFilmT.getFilmPresalenum());
             filmInfo.setFilmId(moocFilmT.getUuid()+"");
             filmInfo.setFilmName(moocFilmT.getFilmName());
+
             if(moocFilmT.getFilmScore()==null){
                 filmInfo.setFilmScore("");
             }else {
@@ -129,7 +146,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
             }
             if(catId!=99){
                 //#2#4#22#
-                String catStr="%#"+catId+"#%";
+                String catStr="#"+catId+"#";
                 entityWrapper.like("film_cats",catStr);
             }
             List<MoocFilmT> moocFilms=moocFilmTMapper.selectPage(page,entityWrapper);
@@ -142,6 +159,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
              totalPages=(totalCounts/nums)+1;
             filmVO.setTotalPage(totalPages);
             filmVO.setNowPage(nowPage);
+            filmVO.setTotalCounts(totalCounts);
         }
 
         return filmVO;
@@ -204,6 +222,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
             totalPages=(totalCounts/nums)+1;
             filmVO.setTotalPage(totalPages);
             filmVO.setNowPage(nowPage);
+            filmVO.setTotalCounts(totalCounts);
         }
 
         return filmVO;
@@ -229,7 +248,8 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
                 page=new Page<>(nowPage,nums,"film_time");
                 break;
             case 3:
-                page=new Page<>(nowPage,nums,"film_score");
+                page=new Page<>(nowPage,nums,"film_score",false);
+                break;
              default:
                  page=new Page<>(nowPage,nums,"film_box_office");
                  break;
@@ -257,6 +277,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
         totalPages=(totalCounts/nums)+1;
         filmVO.setTotalPage(totalPages);
         filmVO.setNowPage(nowPage);
+        filmVO.setTotalCounts(totalCounts);
 
 
         return filmVO;
@@ -365,15 +386,39 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
     }
 
     @Override
-    public FilmDetailVO getFilmDetail(int searchType, String searchParam) {
-      FilmDetailVO filmDetailVO=null;
+    public List<FilmDetailVO> getFilmDetail(String status,int currentPage,int pageSize,boolean isList,int searchType, String searchParam) {
+      List<FilmDetailVO> filmDetailVOs=null;
        //searchType 1-按名称 2-按Id查找
+         int rowIndex=(currentPage-1)*pageSize;
+         char[] c=status.toCharArray();
+         boolean isAll=false;
+
         if(searchType==1){
-          filmDetailVO=  moocFilmTMapper.getFilmDetailByName("%"+searchParam+"%");
+          filmDetailVOs=  moocFilmTMapper.getFilmDetailListOrByName(isList,"%"+searchParam+"%");
         }else {
-            filmDetailVO=  moocFilmTMapper.getFilmDetailById(searchParam);
+            if(status.equalsIgnoreCase("all")){
+                isAll=true;
+            }
+            filmDetailVOs=moocFilmTMapper.getFilmDetailListOrById(isAll,c,rowIndex,pageSize,isList,searchParam);
+
         }
-        return filmDetailVO;
+        return filmDetailVOs;
+    }
+
+    @Override
+    public int getFilmNumsByStatus(String status) {
+        char[] c =status.toCharArray();
+
+            int nums= moocFilmTMapper.getFilmCountByStatus(c);
+
+
+        return nums;
+    }
+
+    @Override
+    public List<Integer> getAllFilmId() {
+            List<Integer> allIds= moocFilmTMapper.getAllFilmId();
+        return allIds;
     }
 
     private MoocFilmInfoT getFilmInfo(String filmId){
@@ -423,4 +468,277 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
        List<ActorVO> actors= moocActorTMapper.getActors(filmId);
         return actors;
     }
+
+    @Transactional
+    @Override
+    public boolean addFilm(String filmName, String directorName, String filmType, String filmYear, String filmSource, byte[] bytes, String[] filmCats, String biography, String filmStatus, String filmLength, Date filmTime,String[] actors)throws FilmException {
+
+        MoocFilmT moocFilmT=new MoocFilmT();
+       MoocFilmInfoT moocFilmInfoT=new MoocFilmInfoT();
+        MoocActorT moocActorT=new MoocActorT();
+        MoocFilmActorT moocFilmActorT=new MoocFilmActorT();
+        int result;
+       int k= filmName.indexOf("(");
+     int j=filmName.indexOf(")",k+1);
+        StringBuilder s=new StringBuilder();
+        String split="#";
+        for(int i=0;i<filmCats.length;i++){
+            String filmCat = filmCats[i];
+            s.append(split);
+            s.append(filmCat);
+            if(i==filmCats.length-1){
+                s.append(split);
+            }
+        }
+        moocFilmT.setFilmName(filmName.substring(0,k));
+        moocFilmT.setFilmCats(s.toString());
+        moocFilmT.setFilmTime(filmTime);
+        moocFilmT.setFilmDate(Integer.valueOf(filmYear));
+        moocFilmT.setFilmArea(3);
+        moocFilmT.setFilmSource(Integer.valueOf(filmSource));
+        moocFilmT.setFilmStatus(Integer.valueOf(filmStatus));
+        moocFilmT.setFilmType(Integer.valueOf(filmType));
+
+       Integer filmId= moocFilmTMapper.insertAndGetId(moocFilmT);
+       if(filmId<=0){
+           throw new FilmException(FilmExceptionEnum.MOOC_FILM_T_ERROR);
+       }
+        //获取随机五位数
+        QiniuCloudUtil qiniuCloudUtil=new QiniuCloudUtil();
+        int rannum = new Random().nextInt(89999) + 10000;
+        String nowTimeStr = sDateFormat.format(new Date());
+        String filmImgName="filmPoster/"+filmId+"/"+nowTimeStr+rannum;
+        //使用base64方式上传到七牛云
+        String imgUrl="";
+        try {
+            imgUrl = qiniuCloudUtil.put64image(bytes, filmImgName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        moocFilmT.setImgAddress(imgUrl);
+        moocFilmTMapper.updateById(moocFilmT);
+        moocFilmInfoT.setFilmId(moocFilmT.getUuid()+"");
+        moocFilmInfoT.setFilmEnName(filmName.substring(k+1,j));
+        moocFilmInfoT.setFilmLength(Integer.valueOf(filmLength));
+        moocFilmInfoT.setBiography(biography);
+        moocFilmInfoT.setFilmImgs("s,s,s,s,s");
+           moocActorT.setActorName(directorName);
+           moocActorTMapper.insertAndGetId(moocActorT);
+           moocFilmInfoT.setDirectorId(moocActorT.getUuid());
+         result=   moocFilmInfoTMapper.insert(moocFilmInfoT);
+         if(result<=0){
+             throw new FilmException(FilmExceptionEnum.MOOC_FILM_INFO_T_ERROR);
+         }
+
+        for(int i=0;i<actors.length;i++){
+            String[] actor=actors[i].split(":|：");
+            moocActorT.setActorName(actor[0]);
+          Integer actorId=   moocActorTMapper.insertAndGetId(moocActorT);
+          if(actorId<=0){
+              throw new FilmException(FilmExceptionEnum.MOOC_ACTOR_T_ERROR);
+          }
+            moocFilmActorT.setRoleName(actor[1]);
+            moocFilmActorT.setActorId(moocActorT.getUuid());
+            moocFilmActorT.setFilmId(moocFilmT.getUuid());
+           result= moocFilmActorTMapper.insert(moocFilmActorT);
+           if(result<=0){
+               throw new FilmException(FilmExceptionEnum.MOOC_FILM_ACTOR_T_ERROR);
+           }
+
+        }
+     return true;
+
+    }
+
+
+
+    @Override
+    public List<TypeVO> getFilmTypes() {
+        List<MoocTypeDictT> moocTypeDictT=moocTypeDictTMapper.selectList(null);
+        List<TypeVO> typeVOS =new ArrayList<>();
+
+        for(MoocTypeDictT moocTypeDictT1:moocTypeDictT){
+            TypeVO typeVO =new TypeVO();
+           typeVO.setTypeId(moocTypeDictT1.getUuid()+"");
+           typeVO.setTypeName(moocTypeDictT1.getShowName());
+            typeVOS.add(typeVO);
+        }
+        return typeVOS;
+    }
+
+@Transactional
+    @Override
+    public boolean updateFilmById(String filmId, boolean filmPosterExists,byte[] bytes, String filmName, String directorName, String filmType, String filmYear, String filmSource, String[] filmCat, String[] actors, String filmLength, String biography, String filmStatus, Date filmTime) {
+        //获取随机五位数
+        String imgUrl="";
+        if(filmPosterExists){
+            QiniuCloudUtil qiniuCloudUtil=new QiniuCloudUtil();
+            int rannum = new Random().nextInt(89999) + 10000;
+            String nowTimeStr = sDateFormat.format(new Date());
+            String filmImgName="filmPoster/"+filmId+"/"+nowTimeStr+rannum;
+            //使用base64方式上传到七牛云
+
+            try {
+                qiniuCloudUtil.deleteFilmPoster(filmId);
+                imgUrl = qiniuCloudUtil.put64image(bytes, filmImgName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    MoocFilmActorT moocFilmActorT=new MoocFilmActorT();
+    MoocActorT moocActorT=new MoocActorT();
+EntityWrapper<MoocFilmActorT> moocFilmActorTEntityWrapper=new EntityWrapper<>();
+    List<ActorNameAndRoleNameVO> actorNameAndRoleName = moocActorTMapper.getActorNameAndRoleName(filmId);
+    List<Integer> actorIdList=new ArrayList<>();
+    for(ActorNameAndRoleNameVO actorNameAndRoleNameVO:actorNameAndRoleName){
+        actorIdList.add(actorNameAndRoleNameVO.getActorId());
+    }
+    moocFilmActorTEntityWrapper.eq("film_id",filmId);
+    moocFilmActorTMapper.delete(moocFilmActorTEntityWrapper);
+moocActorTMapper.deleteBatchIds(actorIdList);
+    for(int l=0;l<actors.length;l++) {
+        String[] actor = actors[l].split(":|：");
+        moocActorT.setActorName(actor[0]);
+        Integer actorId = moocActorTMapper.insertAndGetId(moocActorT);
+        if (actorId <= 0) {
+            throw new FilmException(FilmExceptionEnum.MOOC_ACTOR_T_ERROR);
+        }
+        moocFilmActorT.setRoleName(actor[1]);
+        moocFilmActorT.setActorId(moocActorT.getUuid());
+        moocFilmActorT.setFilmId(Integer.valueOf(filmId));
+        moocFilmActorTMapper.insert(moocFilmActorT);
+    }
+//    List<ActorNameAndRoleNameVO> actorNameAndRoleName = moocActorTMapper.getActorNameAndRoleName(filmId);
+//boolean flag=false;
+//
+//continueOut:
+//    for(int i=0;i<actors.length;i++) {
+//        String[] actor = actors[i].split(":|：");
+//
+//        for(ActorNameAndRoleNameVO actorNameAndRoleNameVO:actorNameAndRoleName){
+//
+//            if( actor[0].equals(actorNameAndRoleNameVO.getActorName())&&actor[1].equals(actorNameAndRoleNameVO.getRoleName())){
+//
+//                continue continueOut;
+//            }
+//
+//        }
+//
+//        for(ActorNameAndRoleNameVO actorNameAndRoleNameVO1:actorNameAndRoleName){
+//            if(actor[0].equals(actorNameAndRoleNameVO1.getActorName())&&!actor[1].equals(actorNameAndRoleNameVO1.getRoleName())){
+//                moocFilmActorT.setRoleName(actor[1]);
+//                EntityWrapper<MoocFilmActorT> entityWrapper1=new EntityWrapper<>();
+//                entityWrapper1.eq("film_id",filmId);
+//                moocFilmActorTMapper.update(moocFilmActorT,entityWrapper1);
+//                continue continueOut;
+//            }
+//        }
+//
+//        for(ActorNameAndRoleNameVO actorNameAndRoleNameVO2:actorNameAndRoleName){
+//            if(!actor[0].equals(actorNameAndRoleNameVO2.getActorName())&&actor[1].equals(actorNameAndRoleNameVO2.getRoleName())){
+//                moocActorT.setActorName(actor[0]);
+//                moocActorT.setUuid(actorNameAndRoleNameVO2.getActorId());
+//                moocActorTMapper.updateById(moocActorT);
+//                continue continueOut;
+//            }
+//        }
+//        for(ActorNameAndRoleNameVO actorNameAndRoleNameVO3:actorNameAndRoleName){
+//            if(!actor[0].equals(actorNameAndRoleNameVO3.getActorName())&&!actor[1].equals(actorNameAndRoleNameVO3.getRoleName())){
+//                moocActorT.setActorName(actor[0]);
+//                moocActorTMapper.insertAndGetId(moocActorT);
+//                moocFilmActorT.setRoleName(actor[1]);
+//                moocFilmActorT.setActorId(moocActorT.getUuid());
+//                moocFilmActorT.setFilmId(Integer.valueOf(filmId));
+//                moocFilmActorTMapper.insert(moocFilmActorT);
+//                continue continueOut;
+//            }
+//        }
+//    }
+        MoocFilmT moocFilmT=new MoocFilmT();
+        if(filmPosterExists) {
+            moocFilmT.setImgAddress(imgUrl);
+        }
+        moocFilmT.setFilmType(Integer.valueOf(filmType));
+        moocFilmT.setFilmStatus(Integer.valueOf(filmStatus));
+        moocFilmT.setFilmSource(Integer.valueOf(filmSource));
+        moocFilmT.setFilmArea(2);
+        moocFilmT.setFilmDate(Integer.valueOf(filmYear));
+        moocFilmT.setFilmTime(filmTime);
+        String filmCats="";
+        for(int i=0;i<filmCat.length;i++){
+            filmCats+= "#"+filmCat[i];
+            if(i==filmCat.length-1){
+                filmCats=filmCats+"#";
+            }
+        }
+        moocFilmT.setFilmCats(filmCats);
+        int k= filmName.indexOf("(");
+        int j=filmName.indexOf(")",k+1);
+        moocFilmT.setFilmName(filmName.substring(0,k));
+        moocFilmT.setUuid(Integer.valueOf(filmId));
+        moocFilmTMapper.updateById(moocFilmT);
+        MoocFilmInfoT moocFilmInfoT=new MoocFilmInfoT();
+        moocFilmInfoT.setFilmId(filmId);
+        moocFilmInfoT.setFilmEnName(filmName.substring(k+1,j));
+        moocFilmInfoT.setFilmLength(Integer.valueOf(filmLength));
+        moocFilmInfoT.setBiography(biography);
+        EntityWrapper<MoocFilmInfoT> entityWrapper0=new EntityWrapper<>();
+        entityWrapper0.eq("film_id",filmId);
+        moocFilmInfoTMapper.update(moocFilmInfoT,entityWrapper0);
+
+        EntityWrapper<MoocFilmInfoT> entityWrapper=new EntityWrapper<>();
+        entityWrapper.eq("film_id",filmId);
+        List<MoocFilmInfoT> moocFilmInfoTS = moocFilmInfoTMapper.selectList(entityWrapper);
+
+        moocActorT.setUuid(moocFilmInfoTS.get(0).getDirectorId());
+
+        moocActorT.setActorName(directorName);
+        moocActorTMapper.updateById(moocActorT);
+
+        return true;
+    }
+@Transactional
+    @Override
+    public boolean deleteFilmById(String filmId) {
+       int num= moocFilmTMapper.deleteById(Integer.valueOf(filmId));
+       if(num<0){
+           throw new FilmException(FilmExceptionEnum.MOOC_FILM_T_ERROR);
+       }
+        EntityWrapper<MoocFilmInfoT> entityWrapper=new EntityWrapper<>();
+        entityWrapper.eq("film_id",filmId);
+        MoocFilmInfoT moocFilmInfoT=new MoocFilmInfoT();
+        moocFilmInfoT.setFilmId(filmId);
+
+    MoocFilmInfoT moocFilmInfoT1 = moocFilmInfoTMapper.selectOne(moocFilmInfoT);
+    int directorId=moocFilmInfoT1.getDirectorId();
+      int directorResult= moocActorTMapper.deleteById(directorId);
+       if(directorResult<0){
+           throw new FilmException(FilmExceptionEnum.MOOC_ACTOR_T_ERROR);
+       }
+       int result= moocFilmInfoTMapper.delete(entityWrapper);
+       if(result<0){
+           throw new FilmException(FilmExceptionEnum.MOOC_FILM_INFO_T_ERROR);
+       }
+
+        List<ActorNameAndRoleNameVO> actorNameAndRoleName = moocActorTMapper.getActorNameAndRoleName(filmId);
+        List<Integer> actorIdList=new ArrayList<>();
+        for(ActorNameAndRoleNameVO actorNameAndRoleNameVO:actorNameAndRoleName){
+            actorIdList.add(actorNameAndRoleNameVO.getActorId());
+        }
+
+       int moocActorResult= moocActorTMapper.deleteBatchIds(actorIdList);
+        if(moocActorResult<0){
+            throw new FilmException(FilmExceptionEnum.MOOC_ACTOR_T_ERROR);
+        }
+       EntityWrapper<MoocFilmActorT> entityWrapper1=new EntityWrapper<>();
+       entityWrapper1.eq("film_Id",filmId);
+      int filmActorResult= moocFilmActorTMapper.delete(entityWrapper1);
+      if(filmActorResult<0){
+          throw new FilmException(FilmExceptionEnum.MOOC_FILM_ACTOR_T_ERROR);
+      }
+
+        return true;
+    }
+
 }

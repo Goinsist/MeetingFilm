@@ -18,7 +18,7 @@ public class ContextConfig {
     private String bizEnBigName;//业务英文名称(大写)
     private String moduleName = "system";  //模块名称
 
-    private String proPackage = "com.stylefeng.guns.admin";
+    private String proPackage = "com.stylefeng.guns.adminuser";
     private String coreBasePackage = "com.stylefeng.guns.core";
     private String modelPackageName = "com.stylefeng.guns.modular.system.model";        //model的包名
     private String modelMapperPackageName = "com.stylefeng.guns.modular.system.dao";    //model的dao

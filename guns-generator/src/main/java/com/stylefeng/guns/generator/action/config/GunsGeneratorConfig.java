@@ -36,18 +36,18 @@ public class GunsGeneratorConfig extends AbstractGeneratorConfig {
 
     protected void packageConfig() {
         packageConfig.setParent(null);
-        packageConfig.setEntity("com.stylefeng.guns.admin.common.persistence.model");
-        packageConfig.setMapper("com.stylefeng.guns.admin.common.persistence.dao");
-        packageConfig.setXml("com.stylefeng.guns.admin.common.persistence.dao.mapping");
+        packageConfig.setEntity("com.stylefeng.guns.adminuser.common.persistence.model");
+        packageConfig.setMapper("com.stylefeng.guns.adminuser.common.persistence.dao");
+        packageConfig.setXml("com.stylefeng.guns.adminuser.common.persistence.dao.mapping");
     }
 
     protected void contextConfig() {
-        contextConfig.setProPackage("com.stylefeng.guns.admin");
+        contextConfig.setProPackage("com.stylefeng.guns.adminuser");
         contextConfig.setCoreBasePackage("com.stylefeng.guns.core");
         contextConfig.setBizChName("字典管理");
         contextConfig.setBizEnName("sysDict");
         contextConfig.setModuleName("system");
-        contextConfig.setProjectPath("D:\\ideaSpace\\guns\\guns-admin");//写自己项目的绝对路径
+        contextConfig.setProjectPath("D:\\ideaSpace\\guns\\guns-adminuser");//写自己项目的绝对路径
         contextConfig.setEntityName("SysDict");
         sqlConfig.setParentMenuName(null);//这里写已有菜单的名称,当做父节点
 

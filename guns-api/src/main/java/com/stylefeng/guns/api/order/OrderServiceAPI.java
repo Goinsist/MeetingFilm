@@ -3,8 +3,6 @@ package com.stylefeng.guns.api.order;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 
-import java.util.List;
-
 public interface OrderServiceAPI {
     //验证售出的票是否为真
 boolean isTrueSeats(String fieldId,String seats);
@@ -23,5 +21,6 @@ Page<OrderVO> getOrderByUserId(Integer userId, Page<OrderVO> page);
 
    boolean paySuccess(String orderId);
     boolean payFail(String orderId);
+
 
 }

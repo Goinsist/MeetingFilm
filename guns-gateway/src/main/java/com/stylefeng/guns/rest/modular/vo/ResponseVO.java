@@ -16,6 +16,7 @@ public class ResponseVO<M> {
     private int nowPage;
     private int totalPage;
 
+
     private ResponseVO(){};
     //成功
     public static<M> ResponseVO success(int nowPage,int totalPage,String imgPre,M m){

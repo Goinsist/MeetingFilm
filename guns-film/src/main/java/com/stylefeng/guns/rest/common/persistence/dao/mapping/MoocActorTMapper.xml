@@ -10,6 +10,8 @@
     </resultMap>
 <select id="getActors" parameterType="String" resultType="com.stylefeng.guns.api.film.vo.ActorVO">
 SELECT
+
+
 	actor.actor_name AS directorName,
 	actor.actor_img AS imgAddress,
 	rela.role_name AS roleName
@@ -23,4 +25,29 @@ AND rela.film_id = #{filmId};
 
 
 </select>
+    <select id="getActorName" parameterType="String" resultType="com.stylefeng.guns.api.film.vo.ActorVO">
+SELECT
+GROUP_CONCAT(actor.actor_name SEPARATOR ',')as directorName,
+GROUP_CONCAT(rela.role_name SEPARATOR ',')as roleName
+
+
+FROM
+	mooc_actor_t actor,
+	mooc_film_actor_t rela
+WHERE
+	actor.uuid = rela.actor_id
+AND rela.film_id = #{filmId};
+
+
+
+</select>
+	<insert id="insertAndGetId" keyProperty="moocActorT.uuid" useGeneratedKeys="true" parameterType="com.stylefeng.guns.rest.common.persistence.model.MoocActorT">
+
+		insert into mooc_actor_t(actor_name) values (#{moocActorT.actorName})
+
+
+	</insert>
+	<select id="getActorNameAndRoleName" parameterType="String" resultType="com.stylefeng.guns.api.film.vo.ActorNameAndRoleNameVO">
+         select actor_id as actorId,actor_name as actorName,role_name as roleName from mooc_actor_t a,mooc_film_actor_t b where a.uuid=b.actor_id and b.film_id=#{filmId}
+	</select>
 </mapper>

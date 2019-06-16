@@ -34,6 +34,7 @@ AND f.UUID = ${fieldId}
         SELECT
 	o.UUID AS orderId,
 	h.film_name AS filmName,
+	h.img_address as filmPoster,
 	CONCAT(
 		'今天 ',
 		DATE_FORMAT(o.order_time, '%m月%d日'),

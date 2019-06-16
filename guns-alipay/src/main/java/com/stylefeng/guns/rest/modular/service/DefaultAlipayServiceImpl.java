@@ -8,6 +8,7 @@ import com.stylefeng.guns.api.alipay.vo.AliPayInfoVO;
 import com.stylefeng.guns.api.alipay.vo.AliPayResultVO;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
+import com.stylefeng.guns.core.util.QiniuCloudUtil;
 import com.stylefeng.guns.rest.common.util.FTPUtil;
 import com.stylefeng.guns.rest.modular.alipay.config.Configs;
 import com.stylefeng.guns.rest.modular.alipay.model.ExtendParams;
@@ -27,6 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +40,7 @@ import java.util.List;
 public class DefaultAlipayServiceImpl implements AliPayServiceAPI {
     @Autowired
     private FTPUtil ftpUtil;
-   @Reference(interfaceClass = OrderServiceAPI.class,check = false,group = "order2018",filter = "tracing")
+   @Reference(interfaceClass = OrderServiceAPI.class,check = false,group = "order2019",filter = "tracing")
     private OrderServiceAPI orderServiceAPI;
     // 支付宝当面付2.0服务
     private static AlipayTradeService tradeService;
@@ -86,6 +90,7 @@ if(filePath==null||filePath.trim().length()==0){
     // 测试当面付2.0生成支付二维码
     private String trade_precreate(String orderId) {
         String filePath="";
+        String  filmQrCodePath="";
         //获取订单信息
         OrderVO orderVO=orderServiceAPI.getOrderInfoById(orderId);
 
@@ -155,11 +160,44 @@ if(filePath==null||filePath.trim().length()==0){
                 // 需要修改为运行机器上的路径
                  filePath = String.format("H:/qrcode/qr-%s.png",
                         response.getOutTradeNo());
-                 String fileName=String.format("qr-%s.png",response.getOutTradeNo());
+                //获取随机五位数
+                QiniuCloudUtil qiniuCloudUtil=new QiniuCloudUtil();
+
+                 filmQrCodePath="qrCode/"+"qr-"+response.getOutTradeNo();
+
+//                 String fileName=String.format("qr-%s.png",response.getOutTradeNo());
                 log.info("filePath:" + filePath);
                 File qrCodeImge=ZxingUtils.getQRCodeImge(response.getQrCode(), 256, filePath);
-              boolean isSuccess=  ftpUtil.uploadFile(fileName,qrCodeImge);
-              if(!isSuccess){
+//              boolean isSuccess=  ftpUtil.uploadFile(fileName,qrCodeImge);
+                //使用base64方式上传到七牛云
+                String imgUrl="";
+                //init array with file length
+                byte[] bytesArray = new byte[(int) qrCodeImge.length()];
+
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(qrCodeImge);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    fis.read(bytesArray); //read file into bytes[]
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    imgUrl = qiniuCloudUtil.put64image(bytesArray, filmQrCodePath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+              if(imgUrl==null){
                   filePath="";
                   log.error("二维码上传失败");
               }
@@ -177,7 +215,7 @@ if(filePath==null||filePath.trim().length()==0){
                 log.error("不支持的交易状态，交易返回异常!!!");
                 break;
         }
-        return filePath;
+        return "http://img.gongyu91.cn/"+filmQrCodePath;
     }
     //获取订单支付状态
     @Override

@@ -8,4 +8,5 @@ public class CatVO implements Serializable {
     private String catId;
     private String catName;
     private boolean isActive;
+
 }

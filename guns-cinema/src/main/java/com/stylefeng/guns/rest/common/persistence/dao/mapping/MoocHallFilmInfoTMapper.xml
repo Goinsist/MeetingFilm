@@ -10,7 +10,7 @@
         <result column="film_length" property="filmLength" />
         <result column="film_cats" property="filmCats" />
         <result column="film_language" property="filmLanguage" />
-        <result column="actors" property="actors" />
+        <result column="director_name" property="directorName" />
         <result column="img_address" property="imgAddress" />
     </resultMap>
 

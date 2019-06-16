@@ -20,10 +20,11 @@
         <result column="film_length" property="filmLength"></result>
         <result column="film_language" property="filmType"></result>
         <result column="film_cats" property="filmCats"></result>
-        <result column="actors" property="actors"></result>
+        <result column="director_name" property="directorName"></result>
         <result column="img_address" property="imgAddress"></result>
         <collection property="filmFields" ofType="com.stylefeng.guns.api.cinema.vo.FilmFieldVO">
             <result column="UUID" property="fieldId"></result>
+            <result column="show_date" property="showDate"></result>
             <result column="begin_time" property="beginTime"></result>
             <result column="end_time" property="endTime"></result>
             <result column="film_language" property="language"></result>
@@ -32,6 +33,9 @@
 
         </collection>
     </resultMap>
+
+
+
 <select id="getFilmInfos" parameterType="Integer" resultMap="getFilmInfoMap">
 SELECT
 	info.film_id,
@@ -39,16 +43,17 @@ SELECT
 	info.film_length,
 	info.film_language,
 	info.film_cats,
-	info.actors,
+	info.director_name,
 	info.img_address,
 	f.UUID,
-	f.begin_time,
-	f.end_time,
+left(f.begin_time,10) as show_date,
+		substring(f.begin_time,-8,5) as begin_time,
+	substring(f.end_time,-8,5)as end_time,
 	f.hall_name,
 	f.price
 FROM
 	mooc_hall_film_info_t info
-LEFT JOIN mooc_field_t f ON f.film_id = info.film_id
+, mooc_field_t f WHERE f.film_id = info.film_id
 AND f.cinema_id = #{cinemaId}
 
 </select>
@@ -84,6 +89,20 @@ FROM
 WHERE
 	f.film_id = info.film_id
 AND f.UUID = #{fieldId}
+
+    </select>
+<select id="getCinemasByFilmId" resultType="com.stylefeng.guns.api.cinema.vo.CinemaWithFilmVO">
+
+ select any_value(cinema.UUID) as cinemaId,cinema.cinema_name as cinemaName,any_value(cinema.cinema_address)as cinemaAddress,any_value(min(field.price)) as filmMinPrice,GROUP_CONCAT(DATE_FORMAT(field.begin_time,'%H:%m')SEPARATOR ',')as filmRound from mooc_cinema_t cinema, mooc_field_t field
+where field.cinema_id=cinema.UUID and field.film_id=#{filmId} and DATE_FORMAT(field.begin_time,'%Y-%m-%d')=#{releaseDate} group by cinemaName
+
+
+
+
+</select>
+    <select id="getCinemasByFilmIdCounts" resultType="int">
+
+        select count(DISTINCT field.cinema_id) from mooc_field_t field where  field.film_id=#{filmId} and DATE_FORMAT(field.begin_time,'%Y-%m-%d')=#{releaseDate};
 
     </select>
 

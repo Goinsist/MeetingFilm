@@ -1,6 +1,5 @@
 package com.stylefeng.guns.api.film.vo;
 
-import com.stylefeng.guns.api.film.vo.ActorVO;
 import lombok.Data;
 
 import java.util.List;
@@ -9,4 +8,5 @@ import java.util.List;
 public class ActorRequestVO {
     private ActorVO director;
     private List<ActorVO> actors;
+    private ActorVO actorName;
 }

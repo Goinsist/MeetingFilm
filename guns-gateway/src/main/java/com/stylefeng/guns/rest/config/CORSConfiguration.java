@@ -11,7 +11,7 @@ public class CORSConfiguration extends WebMvcConfigurerAdapter {
         registry.addMapping("/**")
                 .allowedMethods("*")
                 .allowedOrigins("*")
-                .allowedHeaders("*");
+                .allowedHeaders("*").allowCredentials(true);
         super.addCorsMappings(registry);
     }
 }

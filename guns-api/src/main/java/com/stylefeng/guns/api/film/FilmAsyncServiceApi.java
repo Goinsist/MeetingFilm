@@ -16,4 +16,7 @@ public interface FilmAsyncServiceApi {
 
     //获取演员信息
     List<ActorVO> getActors(String filmId);
+
+    //获取演员名字:如(黄渤,刘亦菲,胡歌)
+    ActorVO getActorName(String filmId);
 }

@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimpleValidator implements IReqValidator {
 
-    private static String USER_NAME = "admin";
+    private static String USER_NAME = "adminuser";
 
-    private static String PASSWORD = "admin";
+    private static String PASSWORD = "adminuser";
 
     @Override
     public boolean validate(Credence credence) {

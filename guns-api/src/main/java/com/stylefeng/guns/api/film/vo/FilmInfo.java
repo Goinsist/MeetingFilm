@@ -16,5 +16,6 @@ public class FilmInfo implements Serializable {
     private String showTime;
     private int boxNum;
     private int filmStatus;
+    private String directorName;
 
 }

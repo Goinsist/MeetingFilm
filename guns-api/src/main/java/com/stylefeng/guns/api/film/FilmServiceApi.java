@@ -1,7 +1,9 @@
 package com.stylefeng.guns.api.film;
 
+import com.stylefeng.guns.api.film.exception.FilmException;
 import com.stylefeng.guns.api.film.vo.*;
 
+import java.util.Date;
 import java.util.List;
 
 public interface FilmServiceApi {
@@ -27,16 +29,32 @@ List<FilmInfo> getExpectRanking();
     //获取年代条件
     List<YearVO> getYears();
     //根据影片ID或者名称获取影片信息
-    FilmDetailVO getFilmDetail(int searchType,String searchParam);
+    List<FilmDetailVO> getFilmDetail(String status,int currentPage,int pageSize,boolean isList,int searchType,String searchParam);
    //获取影片相关的其他信息[演员表,图片地址...]
-
+    //根据筛选条件获得相应影片数目
+int getFilmNumsByStatus(String status);
+    //获取所有影片的id
+    List<Integer> getAllFilmId();
     //获取影片描述信息
 FilmDescVO getFilmDesc(String filmId);
     //获取图片信息
 ImgVO getImgs(String filmId);
 //获取导演信息
     ActorVO getDectInfo(String filmId);
-
     //获取演员信息
 List<ActorVO> getActors(String filmId);
+//添加电影信息
+    boolean  addFilm(String filmName, String directorName, String filmType,String filmYear,String filmSource, byte[] bytes, String[] filmCats, String biography,String filmStatus,String filmLength,Date filmTime,String[] actors)throws FilmException;
+
+    //获取电影类型
+    List<TypeVO> getFilmTypes();
+
+ //修改电影详情信息
+    boolean updateFilmById(String filmId,boolean filmPosterExists, byte[] bytes,String filmName,String directorName,String filmType,String filmYear,
+                           String filmSource,String[] filmCat,String[] actors,String filmLength,String biography,
+                           String filmStatus,Date filmTime);
+
+    //删除电影详情及演员相关信息
+    boolean deleteFilmById(String filmId);
+
 }

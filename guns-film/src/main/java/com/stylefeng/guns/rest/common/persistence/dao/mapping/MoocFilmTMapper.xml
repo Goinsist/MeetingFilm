@@ -22,11 +22,12 @@
 SELECT
     film.uuid as filmId,
 	film.film_name AS filmName,
-	info.film_en_name AS fileEnName,
+	info.film_en_name AS filmEnName,
 	film.img_address AS imgAddress,
 	info.film_score AS score,
 	info.film_score_num AS scoreNum,
 	film.film_box_office AS totalBox,
+	film.film_status as status,
 	(
 		SELECT
 			GROUP_CONCAT(show_name SEPARATOR ',')
@@ -56,7 +57,7 @@ SELECT
 			FROM
 				mooc_source_dict_t t
 			WHERE
-				t.UUID = film.UUID
+				t.UUID = film.film_source
 		),
 		'/',
 		info.film_length,
@@ -70,7 +71,7 @@ SELECT
 			FROM
 				mooc_source_dict_t t
 			WHERE
-				t.UUID = film.UUID
+				t.UUID = film.film_source
 		),
 		'上映'
 	) info03
@@ -79,20 +80,30 @@ FROM
 	mooc_film_info_t info
 WHERE
 	film.UUID = info.film_id
-AND film.film_name LIKE #{filmName}
+	<if test="!isList">
+		AND film.film_name LIKE #{filmName}
+	</if>
+
 
 
 </select>
 
-    <select id="getFilmDetailById" parameterType="String" resultType="com.stylefeng.guns.api.film.vo.FilmDetailVO">
+    <select id="getFilmDetailListOrById" parameterType="String" resultType="com.stylefeng.guns.api.film.vo.FilmDetailVO">
 SELECT
  film.uuid as filmId,
+		film.film_preSaleNum as filmPreSaleNum,
+		film.film_type as filmType,
+		film.film_date as filmYear,
+       film.film_source as filmSource,
+
+        film.film_cats as filmCat,
 	film.film_name AS filmName,
-	info.film_en_name AS fileEnName,
+	info.film_en_name AS filmEnName,
 	film.img_address AS imgAddress,
 	info.film_score AS score,
 	info.film_score_num AS scoreNum,
 	film.film_box_office AS totalBox,
+		film.film_status as status,
 	(
 		SELECT
 			GROUP_CONCAT(show_name SEPARATOR ',')
@@ -122,7 +133,7 @@ SELECT
 			FROM
 				mooc_source_dict_t t
 			WHERE
-				t.UUID = film.UUID
+				t.UUID = film.film_source
 		),
 		'/',
 		info.film_length,
@@ -136,7 +147,7 @@ SELECT
 			FROM
 				mooc_source_dict_t t
 			WHERE
-				t.UUID = film.UUID
+				t.UUID = film.film_source
 		),
 		'上映'
 	) info03
@@ -145,8 +156,55 @@ FROM
 	mooc_film_info_t info
 WHERE
 	film.UUID = info.film_id
-AND film.UUID = #{uuid}
+		<if test="!isList">
+			AND film.UUID = #{uuid}
+		</if>
+		<if test="status[0]!='0' and !isAll">
+			AND film.film_status IN
+            <foreach collection="status" item="item" index="index" open="(" close=")" separator=",">
+
+              #{item}
+
+            </foreach>
+
+		</if>
+		<if test="isList">
+			LIMIT #{rowIndex},#{pageSize}
+
+		</if>
+
 
 
     </select>
+	<select id="getAllFilmId" resultType="Integer">
+		select UUID from mooc_film_t
+	</select>
+
+	<select id="getFilmCountByStatus" resultType="int">
+		SELECT
+count(film.uuid)
+
+FROM
+	mooc_film_t film,
+	mooc_film_info_t info
+WHERE
+	film.UUID = info.film_id
+
+
+			AND film.film_status IN
+		<foreach collection="status" item="item" index="index" open="(" close=")" separator=",">
+
+			#{item}
+
+		</foreach>
+
+
+
+	</select>
+	<insert id="insertAndGetId"  keyProperty="moocFilmT.uuid" useGeneratedKeys="true" parameterType="com.stylefeng.guns.rest.common.persistence.model.MoocFilmT" >
+
+
+		insert into mooc_film_t(film_name,film_type,img_address,film_source,film_cats,film_area,film_date,film_time,film_status) values (#{moocFilmT.filmName},#{moocFilmT.filmType},#{moocFilmT.imgAddress},#{moocFilmT.filmSource},#{moocFilmT.filmCats},#{moocFilmT.filmArea},#{moocFilmT.filmDate},#{moocFilmT.filmTime},#{moocFilmT.filmStatus})
+	</insert>
+
 </mapper>

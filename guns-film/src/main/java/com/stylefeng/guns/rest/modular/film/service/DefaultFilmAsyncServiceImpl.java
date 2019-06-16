@@ -73,4 +73,10 @@ public class DefaultFilmAsyncServiceImpl implements FilmAsyncServiceApi {
        List<ActorVO> actors= moocActorTMapper.getActors(filmId);
         return actors;
     }
+
+    @Override
+    public ActorVO getActorName(String filmId) {
+        ActorVO actorVO=moocActorTMapper.getActorName(filmId);
+        return actorVO;
+    }
 }

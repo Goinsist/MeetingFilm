@@ -1,10 +1,11 @@
 package com.stylefeng.guns.rest.common.persistence.dao;
 
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.stylefeng.guns.api.film.vo.FilmDetailVO;
 import com.stylefeng.guns.rest.common.persistence.model.MoocFilmT;
-import com.baomidou.mybatisplus.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,6 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
  * @since 2019-04-10
  */
 public interface MoocFilmTMapper extends BaseMapper<MoocFilmT> {
-FilmDetailVO getFilmDetailByName(@Param("filmName") String filmName);
-FilmDetailVO getFilmDetailById(@Param("uuid") String uuid);
+List<FilmDetailVO> getFilmDetailListOrByName(@Param("isList") boolean isList,@Param("filmName") String filmName);
+List<FilmDetailVO> getFilmDetailListOrById(@Param("isAll") boolean isAll,@Param("status") char[] status,@Param("rowIndex") int rowIndex,@Param("pageSize") int pageSize,@Param("isList") boolean isList,@Param("uuid") String uuid);
+List<Integer> getAllFilmId();
+int getFilmCountByStatus(@Param("status") char[] status);
+int insertAndGetId(@Param("moocFilmT") MoocFilmT moocFilmT);
+
 }

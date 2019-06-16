@@ -10,7 +10,11 @@ import com.stylefeng.guns.rest.common.persistence.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -174,13 +178,18 @@ cinemaInfoVO.setImgUrl(moocCinemaT.getImgAddress());
 cinemaInfoVO.setCinemaPhone(moocCinemaT.getCinemaPhone());
 cinemaInfoVO.setCinemaName(moocCinemaT.getCinemaName());
 cinemaInfoVO.setCinemaId(moocCinemaT.getUuid()+"");
-cinemaInfoVO.setCinemaAdress(moocCinemaT.getCinemaAddress());
+cinemaInfoVO.setCinemaAddress(moocCinemaT.getCinemaAddress());
         return cinemaInfoVO;
     }
 //获取所有电影的信息和对应的放映场次信息，根据影院编号
     @Override
     public List<FilmInfoVO> getFilmInfoByCinemaId(int cinemaId) {
 List<FilmInfoVO> filmInfos=moocFieldTMapper.getFilmInfos(cinemaId);
+for(FilmInfoVO filmInfoVO:filmInfos){
+    filmInfoVO.setImgAddress("http://img.gongyu91.cn"+filmInfoVO.getImgAddress());
+    filmInfoVO.setDesc(filmInfoVO.getFilmLength()+"分钟"+" | "+filmInfoVO.getFilmCats()+" | "+"导演:"+filmInfoVO.getDirectorName());
+}
+
         return filmInfos;
     }
 //根据放映场次ID获取放映信息
@@ -205,6 +214,53 @@ FilmInfoVO filmInfoVO=moocFieldTMapper.getFilmInfoById(fieldId);
         orderQueryVO.setFilmPrice(moocFieldT.getPrice()+"");
         return orderQueryVO;
     }
+
+    @Override
+    public Page<CinemaWithFilmVO> getCinemasByFilmId(String filmId, String releaseDate, String pageIndex, String pageSize) {
+        Page<CinemaWithFilmVO> result=new Page<CinemaWithFilmVO>(Integer.valueOf(pageIndex),Integer.valueOf(pageSize));
+        List<CinemaWithFilmVO> cinemasByFilmId = moocFieldTMapper.getCinemasByFilmId(filmId, releaseDate);
+        if(cinemasByFilmId==null||cinemasByFilmId.size()==0){
+            result.setTotal(0);
+            result.setRecords(new ArrayList<>());
+            return result;
+        }else{
+            result.setRecords(cinemasByFilmId);
+            result.setTotal(moocFieldTMapper.getCinemasByFilmIdCounts(filmId,releaseDate));
+            result.setSize(Integer.valueOf(pageSize));
+            return result;
+        }
+
+
+    }
+
+    @Override
+    public CinemaFilmVO getFilmsWithCinemaId(String cinemaId) {
+     CinemaFilmVO cinemaFilmVO=new CinemaFilmVO();
+        MoocCinemaT moocCinemaT = moocCinemaTMapper.selectById(cinemaId);
+        List<FilmInfoVO> filmInfos = moocFieldTMapper.getFilmInfos(Integer.valueOf(cinemaId));
+         cinemaFilmVO.setCinemaAddress(moocCinemaT.getCinemaAddress());
+         cinemaFilmVO.setCinemaId(moocCinemaT.getUuid()+"");
+         cinemaFilmVO.setCinemaName(moocCinemaT.getCinemaName());
+         cinemaFilmVO.setFilmInfos(filmInfos);
+
+        return cinemaFilmVO;
+    }
+
+    @Override
+    public long getShowTime(String fieldId) {
+        MoocFieldT moocFieldT = moocFieldTMapper.selectById(fieldId);
+
+        DateFormat format1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        try {
+            Date date=format1.parse(moocFieldT.getBeginTime());
+            long time = date.getTime();
+         return time;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+return  0;
+    }
+
 
 
 }

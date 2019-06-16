@@ -147,7 +147,7 @@ private double getTotalPrice(int solds,double filmPrice){
 }
     @Override
     public Page<OrderVO> getOrderByUserId(Integer userId,Page<OrderVO> page) {
-        Page<OrderVO> result=new Page<>();
+        Page<OrderVO> result=new Page<>(page.getCurrent(),page.getSize());
         if(userId==null){
             log.error("订单查询业务失败，用户编号未传入");
             return null;
@@ -224,4 +224,6 @@ private double getTotalPrice(int solds,double filmPrice){
             return false;
         }
     }
+
+
 }
