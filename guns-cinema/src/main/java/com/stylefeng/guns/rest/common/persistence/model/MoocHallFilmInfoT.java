@@ -51,9 +51,10 @@ public class MoocHallFilmInfoT extends Model<MoocHallFilmInfoT> {
     @TableField("film_language")
     private String filmLanguage;
     /**
-     * 演员列表
+     * 导演名
      */
-    private String actors;
+    @TableField("director_name")
+    private String directorName;
     /**
      * 图片地址
      */
@@ -109,12 +110,12 @@ public class MoocHallFilmInfoT extends Model<MoocHallFilmInfoT> {
         this.filmLanguage = filmLanguage;
     }
 
-    public String getActors() {
-        return actors;
+    public String getDirectorName() {
+        return directorName;
     }
 
-    public void setActors(String actors) {
-        this.actors = actors;
+    public void setDirectorName(String directorName) {
+        this.directorName = directorName;
     }
 
     public String getImgAddress() {
@@ -139,7 +140,7 @@ public class MoocHallFilmInfoT extends Model<MoocHallFilmInfoT> {
         ", filmLength=" + filmLength +
         ", filmCats=" + filmCats +
         ", filmLanguage=" + filmLanguage +
-        ", actors=" + actors +
+        ", directorName=" + directorName +
         ", imgAddress=" + imgAddress +
         "}";
     }

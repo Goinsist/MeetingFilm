@@ -4,14 +4,12 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
-import com.stylefeng.guns.api.film.FilmServiceApi;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaConditionResponseVO;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldResponseVO;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldsResponseVO;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -109,6 +107,39 @@ public ResponseVO getFieldInfo(Integer cinemaId,Integer fieldId){
         return ResponseVO.serviceFail("获取选座信息失败");
     }
 }
+@RequestMapping(value = "getCinemasByFilmId",method = RequestMethod.GET)
+public ResponseVO getCinemasByFilmId(String filmId,String releaseDate,String pageIndex,String pageSize){
 
+    Page<CinemaWithFilmVO> cinemasByFilmId = cinemaServiceAPI.getCinemasByFilmId(filmId, releaseDate, pageIndex, pageSize);
+    return ResponseVO.success(cinemasByFilmId.getCurrent(),(int)cinemasByFilmId.getPages(),"",cinemasByFilmId.getRecords());
+}
+
+@RequestMapping(value = "getCinemaInfo",method = RequestMethod.GET)
+    public ResponseVO getCinemaInfo(String cinemaId,String filmId){
+    List<FilmInfoVO> filmInfoByCinemaId = cinemaServiceAPI.getFilmInfoByCinemaId(Integer.valueOf(cinemaId));
+    if(filmInfoByCinemaId==null||filmInfoByCinemaId.size()==0){
+        return ResponseVO.serviceFail("获取影院上映的所有电影信息失败");
+    }
+    CinemaInfoVO cinemaInfoById = cinemaServiceAPI.getCinemaInfoById(Integer.valueOf(cinemaId));
+    if(cinemaInfoById==null){
+        return ResponseVO.serviceFail("根据cinemaId获取对应影院信息失败");
+    }
+    CinemaFieldsResponseVO cinemaFieldsResponseVO=new CinemaFieldsResponseVO();
+    cinemaFieldsResponseVO.setFilmList(filmInfoByCinemaId);
+    cinemaFieldsResponseVO.setCinemaInfo(cinemaInfoById);
+    return ResponseVO.success(cinemaFieldsResponseVO);
+}
+
+@RequestMapping(value = "getShowTime",method = RequestMethod.GET)
+public ResponseVO getShowTime(String fieldId){
+    long showTime = cinemaServiceAPI.getShowTime(fieldId);
+
+    if(showTime==0){
+        return ResponseVO.appFail("获取电影开始时间失败");
+    }else {
+        return ResponseVO.success(showTime);
+    }
+
+}
 
 }

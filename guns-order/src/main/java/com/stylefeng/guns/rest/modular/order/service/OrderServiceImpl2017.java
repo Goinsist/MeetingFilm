@@ -12,10 +12,7 @@ import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.UUIDUtil;
 import com.stylefeng.guns.rest.common.persistence.dao.MoocOrder2017TMapper;
-import com.stylefeng.guns.rest.common.persistence.dao.MoocOrderTMapper;
 import com.stylefeng.guns.rest.common.persistence.model.MoocOrder2017T;
-import com.stylefeng.guns.rest.common.persistence.model.MoocOrder2018T;
-import com.stylefeng.guns.rest.common.persistence.model.MoocOrderT;
 import com.stylefeng.guns.rest.common.util.FTPUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +145,7 @@ private double getTotalPrice(int solds,double filmPrice){
 }
     @Override
     public Page<OrderVO> getOrderByUserId(Integer userId,Page<OrderVO> page) {
-        Page<OrderVO> result=new Page<>();
+        Page<OrderVO> result=new Page<>(page.getCurrent(),page.getSize());
         if(userId==null){
             log.error("订单查询业务失败，用户编号未传入");
             return null;
@@ -224,4 +221,6 @@ private double getTotalPrice(int solds,double filmPrice){
             return false;
         }
     }
+
+
 }
