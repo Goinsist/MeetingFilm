@@ -19,6 +19,7 @@ import com.stylefeng.guns.rest.common.util.FTPUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -93,6 +94,7 @@ public class OrderServiceImpl2019 implements OrderServiceAPI {
         return true;
     }
     //创建新订单
+    @Transactional
     @Override
     public OrderVO saveOrderInfo(Integer fieldId, String soldSeats, String seatsName, Integer userId) {
 //编号

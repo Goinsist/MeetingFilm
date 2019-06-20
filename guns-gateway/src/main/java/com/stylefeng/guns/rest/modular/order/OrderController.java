@@ -64,6 +64,7 @@ return ResponseVO.serviceFail("抱歉，下单的人太多了，请稍后重试"
     public ResponseVO buyTickets(Integer fieldId,String soldSeats,String seatsName) {
     try{
 
+
         if(tokenBucket.getToken()){
 //验证售出的票是否为真
             if(orderServiceAPI.isTrueSeats(fieldId+"",soldSeats)){
