@@ -396,7 +396,7 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
         if(searchType==1){
           filmDetailVOs=  moocFilmTMapper.getFilmDetailListOrByName(isList,"%"+searchParam+"%");
         }else {
-            if(status.equalsIgnoreCase("all")){
+            if(Objects.equals(status,"all")){
                 isAll=true;
             }
             filmDetailVOs=moocFilmTMapper.getFilmDetailListOrById(isAll,c,rowIndex,pageSize,isList,searchParam);

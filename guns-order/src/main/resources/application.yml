@@ -44,9 +44,41 @@ spring:
       username: root
       password: 911013
       filters: log4j,wall,mergeStat
+  rabbitmq:
+      addresses: 106.14.113.7:5672
+      username: guest
+      password: guest
+      virtual-host: /
+      connection-timeout: 15000
+      listener:
+          simple:
+              acknowledge-mode: manual
+              concurrency: 5
+              max-concurrency: 10
+          order-overtime:
+              queue:
+                  name: order_id-overtime-dead
+                  durable: true
+              exchange:
+                  name: order_id_dead
+                  durable: true
+                  type: direct
+                  ignoreDeclarationExceptions: true
+              key: order_id.overtime.dead
+          order:
+              queue:
+                  name: order_id-overtime
+                  durable: true
+              exchange:
+                  name: order_id
+                  durable: true
+                  type: direct
+                  ignoreDeclarationExceptions: true
+              key: order_id.overtime
+
+
 
 logging:
   level.root: info
   level.com.stylefeng: debug
-  path: logs/
-  file: guns-order.log
+  file: H:/打造仿猫眼项目 以Dubbo为核心解锁微服务视频教程/coding-273-master/coding-273/课程资料/guns数据依赖/naan1993-guns-master/guns/log/guns-order.log

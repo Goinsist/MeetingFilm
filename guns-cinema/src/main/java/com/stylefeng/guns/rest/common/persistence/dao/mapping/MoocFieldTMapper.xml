@@ -32,6 +32,7 @@
                 <result column="end_time" property="endTime"></result>
                 <result column="film_language" property="language"></result>
                 <result column="hall_name" property="hallName"></result>
+                <result column="hall_id" property="hallId"></result>
                 <result column="price" property="price"></result>
             </collection>
 
@@ -53,6 +54,7 @@ SELECT
 left(f.begin_time,10) as show_date,
 		substring(f.begin_time,-8,5) as begin_time,
 	substring(f.end_time,-8,5)as end_time,
+	f.hall_id,
 	f.hall_name,
 	f.price
 FROM

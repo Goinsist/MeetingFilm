@@ -7,5 +7,5 @@ import java.io.Serializable;
 public class YearVO implements Serializable {
     private String yearId;
     private String yearName;
-    private boolean isActive;
+    private Boolean active;
 }

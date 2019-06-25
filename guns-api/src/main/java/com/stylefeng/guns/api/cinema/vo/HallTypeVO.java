@@ -8,5 +8,5 @@ import java.io.Serializable;
 public class HallTypeVO implements Serializable {
     private String halltypeId;
     private String halltypeName;
-    private boolean isActive;
+    private Boolean active;
 }

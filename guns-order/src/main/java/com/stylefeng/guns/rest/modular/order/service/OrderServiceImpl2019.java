@@ -12,19 +12,21 @@ import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.UUIDUtil;
 import com.stylefeng.guns.rest.common.persistence.dao.MoocOrder2019TMapper;
-import com.stylefeng.guns.rest.common.persistence.dao.RemoveDuplicateMapper;
 import com.stylefeng.guns.rest.common.persistence.model.MoocOrder2019T;
-import com.stylefeng.guns.rest.common.persistence.model.RemoveDuplicate;
 import com.stylefeng.guns.rest.common.util.FTPUtil;
+import com.stylefeng.guns.rest.common.util.SnowFlake;
+import com.stylefeng.guns.rest.modular.order.rabbitmq.RabbitSender;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 @Slf4j
 @Component
 @Service(interfaceClass = OrderServiceAPI.class,group = "order2019",filter = "tracing")
@@ -36,7 +38,9 @@ public class OrderServiceImpl2019 implements OrderServiceAPI {
     @Autowired
     private FTPUtil ftpUtil;
     @Autowired
-    private RemoveDuplicateMapper removeDuplicateMapper;
+    private RabbitSender rabbitSender;
+
+
     //验证是否为真实的座位编号
     @Override
     public boolean isTrueSeats(String fieldId, String seats) {
@@ -94,9 +98,10 @@ public class OrderServiceImpl2019 implements OrderServiceAPI {
         return true;
     }
     //创建新订单
-    @Transactional
+    @Transactional(rollbackFor=Exception.class)
     @Override
     public OrderVO saveOrderInfo(Integer fieldId, String soldSeats, String seatsName, Integer userId) {
+
 //编号
         String uuid=UUIDUtil.genUuid();
 
@@ -125,10 +130,11 @@ public class OrderServiceImpl2019 implements OrderServiceAPI {
         int insert= moocOrder2019TMapper.insert(moocOrderT);
         if(insert>0){
             OrderVO orderVO= moocOrder2019TMapper.getOrderInfoById(uuid);
-            RemoveDuplicate removeDuplicate=new RemoveDuplicate();
-            removeDuplicate.setUuid(orderVO.getOrderId());
-            removeDuplicateMapper.insert(removeDuplicate);
-            if(orderVO==null||orderVO.getOrderId()==null){
+            String orderId=orderVO.getOrderId();
+            System.err.println(orderId);
+     //消息队列处理超时未支付订单
+            rabbitSender.sendOrderId(orderId);
+            if(orderVO.getOrderId()==null){
                 log.error("订单信息查询失败,订单编号为{}",uuid);
                 return null;
             }else {

@@ -10,8 +10,10 @@ import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.TokenBucket;
 import com.stylefeng.guns.core.util.ToolUtil;
 import com.stylefeng.guns.rest.common.CurrentUser;
+import com.stylefeng.guns.rest.modular.order.cache.JedisUtil;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +28,7 @@ import java.util.List;
 public class OrderController {
     private static     TokenBucket tokenBucket=new TokenBucket();
     private static final String IMG_PRE="http://img.meetingshop.cn/";
+
     @Reference(interfaceClass = OrderServiceAPI.class,
             check = false,
               group = "order2019",filter = "tracing")
@@ -36,6 +39,9 @@ public class OrderController {
     private OrderServiceAPI orderServiceAPI2017;
     @Reference(interfaceClass = AliPayServiceAPI.class,check = false,filter = "tracing")
     private AliPayServiceAPI aliPayServiceAPI;
+    @Autowired
+    private JedisUtil.Sets jedisSets;
+    private final static String BUY_TICKETS_KEY="buy_ticket_key:";
 //方法名随便起，返回值和参数一定要一样
     public ResponseVO error(Integer fieldId,String soldSeats,String seatsName){
 return ResponseVO.serviceFail("抱歉，下单的人太多了，请稍后重试");
@@ -62,6 +68,12 @@ return ResponseVO.serviceFail("抱歉，下单的人太多了，请稍后重试"
 //            })
 @RequestMapping(value = "buyTickets",method = RequestMethod.POST)
     public ResponseVO buyTickets(Integer fieldId,String soldSeats,String seatsName) {
+    //使用redis sets避免重复提交
+    long sadd = jedisSets.sadd(BUY_TICKETS_KEY+CurrentUser.getCurrentUser(),"0" );
+    jedisSets.expired(BUY_TICKETS_KEY+CurrentUser.getCurrentUser(),5);
+    if(sadd==0){
+        return ResponseVO.serviceFail("请勿重复提交!");
+    }
     try{
 
 
@@ -72,6 +84,7 @@ return ResponseVO.serviceFail("抱歉，下单的人太多了，请稍后重试"
                 if( orderServiceAPI.isNotSoldSeats(fieldId+"",soldSeats)){
                     //创建订单信息，主要获取登录人
                     OrderVO orderVO=  orderServiceAPI.saveOrderInfo(fieldId,soldSeats,seatsName,Integer.valueOf(CurrentUser.getCurrentUser()));
+
                     if(orderVO==null){
                         log.error("购票未成功");
                         return ResponseVO.serviceFail("购票业务异常");

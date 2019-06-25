@@ -1,6 +1,7 @@
 package com.stylefeng.guns.core.support;
 
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 /**
  * 十六进制（简写为hex或下标16）在数学中是一种逢16进1的进位制，一般用数字0到9和字母A到F表示（其中:A~F即10~15）。<br>
@@ -187,7 +188,7 @@ public class HexKit {
 	 * @return
 	 */
 	public static String binary2Hex(String bString) {
-		if (bString == null || bString.equals("") || bString.length() % 8 != 0)
+		if (bString == null || Objects.equals(bString,"") || bString.length() % 8 != 0)
 			return null;
 		StringBuffer tmp = new StringBuffer();
 		int iTmp = 0;

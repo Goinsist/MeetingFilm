@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.Future;
 @RequestMapping("/film/")
 public class FilmController {
     private static final String IMG_PRE="http://img.meetingshop.cn/";
-    private static final SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+
     @Reference(interfaceClass = FilmServiceApi.class,check = false)
     private FilmServiceApi filmServiceApi;
     @Reference(interfaceClass = FilmAsyncServiceApi.class,async = true,check = false)
@@ -79,7 +80,7 @@ filmIndexVo.setExpectRanking(filmServiceApi.getExpectRanking());
     CatVO catVO=null;
     for(CatVO cat:cats){
         //判断集合是否存在catId，如果存在将对应的实体变成active状态
-        if(cat.getCatId().equals("99")){
+        if(Objects.equals(cat.getCatId(),"99")){
             catVO=cat;
             continue;
         }
@@ -110,7 +111,7 @@ filmIndexVo.setExpectRanking(filmServiceApi.getExpectRanking());
     SourceVO sourceVO=null;
     for(SourceVO source:sources){
         //判断集合是否存在catId，如果存在将对应的实体变成active状态
-        if(source.getSourceId().equals("99")){
+        if(Objects.equals(source.getSourceId(),"99")){
             sourceVO=source;
             continue;
         }
@@ -140,7 +141,7 @@ filmIndexVo.setExpectRanking(filmServiceApi.getExpectRanking());
     YearVO yearVO=null;
     for(YearVO year:years){
         //判断集合是否存在catId，如果存在将对应的实体变成active状态
-        if(year.getYearId().equals("99")){
+        if(Objects.equals(year.getYearId(),"99")){
             yearVO=year;
             continue;
         }
@@ -344,9 +345,9 @@ return null;
          char[] c=status.toCharArray();
          int nums=0;
         List<FilmDetailVO> filmDetailVOS=filmServiceApi.getFilmDetail(status,currentPage,pageSize,isList,searchType,searchParam);
-  if(c[0]!="0".charAt(0)&&!status.equalsIgnoreCase("all")){
+  if(c[0]!="0".charAt(0)&&!Objects.equals(status,"all")){
       nums= filmServiceApi.getFilmNumsByStatus(status);
-  }else if(status.equalsIgnoreCase("all")){
+  }else if(Objects.equals(status,"all")){
       nums=filmServiceApi.getAllFilmId().size();
   }
         List<FilmDetailVO> filmDetailVOResult=new ArrayList<>();

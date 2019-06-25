@@ -37,9 +37,34 @@ spring:
       username: root
       password: 911013
       filters: log4j,wall,mergeStat
+  rabbitmq:
+        addresses: 106.14.113.7:5672
+        username: guest
+        password: guest
+        virtual-host: /
+        connection-timeout: 15000
+        #实现一个监听器用于监听Broker端给我们返回的确认请求
+        publisher-confirms: true
+        #保证消息对broker端是可达的，如果出现路由键不可达的情况，则使用监听器对不可达的消息进行后续处理，保证消息的路由成功
+        publisher-returns: true
+        #在发送消息的时候对template进行配置mandatory=ture保证监听有效
+        template:
+            mandatory: true
+
+#Redis
+redis:
+  hostname: gongyu91.cn
+  port: 6379
+  password: 911013
+  pool:
+      maxActive: 5000
+      maxIdle: 20
+      maxWait: 3000
+      testOnBorrow: true
+      timeOut: 3000
+
 
 logging:
   level.root: info
   level.com.stylefeng: debug
-  path: logs/
-  file: guns-gateway.log
+  file: H:/打造仿猫眼项目 以Dubbo为核心解锁微服务视频教程/coding-273-master/coding-273/课程资料/guns数据依赖/naan1993-guns-master/guns/log/guns-gateway.log

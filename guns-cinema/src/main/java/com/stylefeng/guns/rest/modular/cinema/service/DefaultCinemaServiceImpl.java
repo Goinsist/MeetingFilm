@@ -1,12 +1,19 @@
 package com.stylefeng.guns.rest.modular.cinema.service;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
+import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
 import com.stylefeng.guns.rest.common.persistence.model.*;
+import com.stylefeng.guns.rest.common.util.FTPUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Service(interfaceClass = CinemaServiceAPI.class,filter = "tracing")
@@ -30,6 +38,10 @@ public class DefaultCinemaServiceImpl implements CinemaServiceAPI{
     private MoocAreaDictTMapper moocAreaDictTMapper;
     @Autowired
     private MoocHallDictTMapper moocHallDictTMapper;
+    @Autowired
+    private FTPUtil ftpUtil;
+    @Reference(interfaceClass = OrderServiceAPI.class, group = "order2019",check = false)
+    private OrderServiceAPI orderServiceAPI;
     //!.根据CinemaQueryVO,查询影院列表
     @Override
     public Page<CinemaVO> getCinemas(CinemaQueryVO cinemaQueryVO) {
@@ -69,6 +81,7 @@ entityWrapper.eq("brand_id",cinemaQueryVO.getBrandId());
     }
 //2.根据条件获取品牌列表[除了99以外,其他的数字为isActive】
     @Override
+
     public List<BrandVO> getBrands(int brandId) {
         boolean flag=false;
         List<BrandVO> brandVOS=new ArrayList<>();
@@ -261,6 +274,40 @@ FilmInfoVO filmInfoVO=moocFieldTMapper.getFilmInfoById(fieldId);
 return  0;
     }
 
+
+
+    @Override
+    public JSONObject getHallSeatsJson(String hallId,String fieldId) {
+        MoocHallDictT moocHallDictT = moocHallDictTMapper.selectById(hallId);
+        String seatPath=moocHallDictT.getSeatAddress();
+        String fileStrByAddress = ftpUtil.getFileStrByAddress(seatPath);
+        String soldSeatsByFieldId = orderServiceAPI.getSoldSeatsByFieldId(Integer.valueOf(fieldId));
+        //将影厅的json字符串转换为json对象
+        JSONObject jsonObject= JSONObject.parseObject(fileStrByAddress);
+        if(soldSeatsByFieldId!=null){
+            String[] soldSeats = soldSeatsByFieldId.split(",");
+
+            List<JSONObject> seatList= (List<JSONObject>) jsonObject.get("seatList");
+
+            for(JSONObject s:seatList){
+                for(String soldSeat:soldSeats){
+                    if(Objects.equals(s.get("id"),soldSeat)){
+                        if(Objects.equals(s.get("type"),"0")){
+                            s.put("type","0-2");
+                        }else if(Objects.equals(s.get("type"),"1")){
+                            s.put("type","1-2");
+                        }else if(Objects.equals(s.get("type"),"2")){
+                            s.put("type","2-2");
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        return jsonObject;
+    }
 
 
 }

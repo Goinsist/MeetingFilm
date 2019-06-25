@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ResponseVO<M> {
     //返回状态[0=成功，1=业务失败,999-表示系统异常]
-    private int status;
+    private Integer status;
     //返回信息
     private String msg;
     //返回数据实体
@@ -13,8 +13,8 @@ public class ResponseVO<M> {
     //图片前缀
     private String imgPre;
     //分也使用
-    private int nowPage;
-    private int totalPage;
+    private Integer nowPage;
+    private Integer totalPage;
 
 
     private ResponseVO(){};

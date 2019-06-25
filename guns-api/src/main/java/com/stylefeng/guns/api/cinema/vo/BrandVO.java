@@ -8,6 +8,6 @@ import java.io.Serializable;
 public class BrandVO implements Serializable {
     private String brandId;
     private String brandName;
-    private boolean isActive;
+    private Boolean active;
 
 }

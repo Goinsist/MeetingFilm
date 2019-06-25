@@ -1,5 +1,6 @@
 package com.stylefeng.guns.api.film.vo;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -8,5 +9,5 @@ import java.io.Serializable;
 public class TypeVO implements Serializable {
     private String typeId;
     private String typeName;
-    private boolean isActive;
+    private Bool active;
 }

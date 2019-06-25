@@ -8,5 +8,5 @@ public class SourceVO implements Serializable {
 
     private String sourceId;
     private String sourceName;
-    private boolean isActive;
+    private Boolean active;
 }

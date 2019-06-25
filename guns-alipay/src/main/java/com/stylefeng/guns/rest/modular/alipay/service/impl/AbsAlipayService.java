@@ -1,10 +1,10 @@
 package com.stylefeng.guns.rest.modular.alipay.service.impl;
 
+
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayRequest;
 import com.alipay.api.AlipayResponse;
-
 import com.stylefeng.guns.rest.modular.alipay.model.builder.RequestBuilder;
 import org.apache.log4j.Logger;
 

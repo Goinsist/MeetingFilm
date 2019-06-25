@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 全局配置
@@ -55,7 +56,7 @@ public class SqlConfig {
         menu.setUrl("/" + contextConfig.getBizEnName());
         menu.setNum(99);
 
-        if (parentMenuName.equals("顶级")) {
+        if (Objects.equals(parentMenuName,"顶级")) {
             menu.setLevels(1);
         } else {
             menu.setLevels(2);
@@ -116,7 +117,7 @@ public class SqlConfig {
     }
 
     public String[] getPcodeAndPcodes() {
-        if (parentMenuName.equals("顶级")) {
+        if (Objects.equals(parentMenuName,"顶级")) {
             return new String[]{"0", ""};
         }
         PreparedStatement preparedStatement = null;

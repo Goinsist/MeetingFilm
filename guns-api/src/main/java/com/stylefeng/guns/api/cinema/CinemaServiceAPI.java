@@ -1,5 +1,6 @@
 package com.stylefeng.guns.api.cinema;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.vo.*;
 
@@ -7,9 +8,11 @@ import java.util.List;
 
 public interface CinemaServiceAPI {
     //1.根据CinemaQueryVO，查询影院列表
+
     Page<CinemaVO> getCinemas(CinemaQueryVO cinemaQueryVO);
 
     //2.根据条件获取品牌列表[除了99以外，其他的数字为isActive]
+
     List<BrandVO> getBrands(int brandId);
     //3.获取行政区域列表
     List<AreaVO> getAreas(int areaId);
@@ -34,5 +37,7 @@ Page<CinemaWithFilmVO> getCinemasByFilmId(String filmId,String releaseDate,Strin
     CinemaFilmVO getFilmsWithCinemaId(String cinemaId);
     //根据场次id获电影开始时间,及订单创建时间
     long getShowTime(String fieldId);
+    //根据影厅id获取对应的影厅座位json
+  JSONObject getHallSeatsJson(String hallId,String fieldId);
 
 }

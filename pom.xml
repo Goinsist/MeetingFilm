@@ -21,6 +21,7 @@
         <module>guns-order</module>
         <module>guns-alipay</module>
         <module>guns-elasticsearch</module>
+
     </modules>
 
     <parent>

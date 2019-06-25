@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 @Data
 public class ActorNameAndRoleNameVO implements Serializable {
-    private int actorId;
+    private Integer actorId;
     private String actorName;
     private String roleName;
 }

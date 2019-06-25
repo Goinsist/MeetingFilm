@@ -11,5 +11,6 @@ public class ShowDate implements Serializable {
     private String endTime;
     private String language;
     private String hallName;
+    private String hallId;
     private String price;
 }

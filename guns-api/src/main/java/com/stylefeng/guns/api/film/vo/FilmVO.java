@@ -7,9 +7,9 @@ import java.util.List;
 
 @Data
 public class FilmVO implements Serializable {
-    private int filmNum;
+    private Integer filmNum;
     private List<FilmInfo> filmInfo;
-    private int totalPage;
-    private int nowPage;
-    private int totalCounts;
+    private Integer totalPage;
+    private Integer nowPage;
+    private Integer totalCounts;
 }

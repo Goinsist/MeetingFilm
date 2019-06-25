@@ -10,6 +10,7 @@ public interface FilmServiceApi {
     //获取banners
   List<BannerVo> getBanners();
     //获取热映影片
+
 FilmVO getHotFilms(boolean isLimit,int nums,int nowPage,int sortId,int sourceId,int yearId,int catId);
     //获取即将上映影片[受欢迎程度做排序]
 FilmVO getSoonFilms(boolean isLimit,int nums,int nowPage,int sortId,int sourceId,int yearId,int catId);
