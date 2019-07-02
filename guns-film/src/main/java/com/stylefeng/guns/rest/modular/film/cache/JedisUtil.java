@@ -1068,7 +1068,7 @@ public Hash(){}
          * */
         public long rpush(String key, String value) {
             Jedis jedis = getJedis();
-            jedis.auth("911013");
+            jedis.auth("yourpassword");
             long count = jedis.rpush(key, value);
             jedis.close();
             return count;
