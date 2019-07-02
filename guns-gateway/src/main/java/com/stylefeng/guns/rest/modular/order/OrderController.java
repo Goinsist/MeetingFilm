@@ -35,6 +35,10 @@ public class OrderController {
     private OrderServiceAPI orderServiceAPI;
     @Reference(interfaceClass = OrderServiceAPI.class,
             check = false,
+            group = "order2018")
+    private OrderServiceAPI orderServiceAPI2018;
+    @Reference(interfaceClass = OrderServiceAPI.class,
+            check = false,
             group = "order2017")
     private OrderServiceAPI orderServiceAPI2017;
     @Reference(interfaceClass = AliPayServiceAPI.class,check = false,filter = "tracing")
@@ -124,14 +128,17 @@ return ResponseVO.serviceFail("抱歉，下单的人太多了，请稍后重试"
     Page<OrderVO> page=new Page<>(nowPage,pageSize);
     if(userId!=null&&userId.trim().length()>0){
        Page<OrderVO> result= orderServiceAPI.getOrderByUserId(Integer.parseInt(userId),page);
+        Page<OrderVO> result2018= orderServiceAPI2018.getOrderByUserId(Integer.parseInt(userId),page);
         Page<OrderVO> result2017= orderServiceAPI2017.getOrderByUserId(Integer.parseInt(userId),page);
         //合并结果
-  int totalPages= (int) (result.getPages()+result2017.getPages());
+
+  int counts= (int) (result.getTotal()+result2017.getTotal()+result2018.getTotal());
   //2017和2018的订单总数合并
         List<OrderVO> orderVOList=new ArrayList<>();
         orderVOList.addAll(result.getRecords());
+        orderVOList.addAll(result2018.getRecords());
         orderVOList.addAll(result2017.getRecords());
-   return ResponseVO.success(nowPage,totalPages,"",orderVOList);
+   return ResponseVO.success(nowPage,counts,"",orderVOList);
     }else {
         return  ResponseVO.serviceFail("用户未登录");
     }

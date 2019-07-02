@@ -5,6 +5,7 @@ import com.stylefeng.guns.api.film.vo.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public interface FilmServiceApi {
     //获取banners
@@ -57,5 +58,6 @@ List<ActorVO> getActors(String filmId);
 
     //删除电影详情及演员相关信息
     boolean deleteFilmById(String filmId);
-
+    //获取5个热搜词
+Set<String> list5HotSearch();
 }

@@ -11,12 +11,14 @@ import com.stylefeng.guns.core.util.QiniuCloudUtil;
 import com.stylefeng.guns.rest.common.exception.FilmExceptionEnum;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
 import com.stylefeng.guns.rest.common.persistence.model.*;
+import com.stylefeng.guns.rest.modular.film.cache.JedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
 
 @Component
 @Service(interfaceClass = FilmServiceApi.class)
@@ -39,6 +41,9 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
     private MoocTypeDictTMapper moocTypeDictTMapper;
     @Autowired
     private MoocFilmActorTMapper moocFilmActorTMapper;
+    private static final String HOT_SEARCH="HOT_SEARCH";
+@Autowired
+private JedisUtil.SortedSet jedisSortedSets;
 
     private static final SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
     @Override
@@ -394,7 +399,14 @@ public class DefaultFilmServiceImpl implements FilmServiceApi {
          boolean isAll=false;
 
         if(searchType==1){
-          filmDetailVOs=  moocFilmTMapper.getFilmDetailListOrByName(isList,"%"+searchParam+"%");
+          filmDetailVOs=  moocFilmTMapper.getFilmDetailByName(isList,"%"+searchParam+"%");
+
+          if(jedisSortedSets.zrank(HOT_SEARCH,searchParam)==null){
+              jedisSortedSets.zadd(HOT_SEARCH,0,searchParam);
+          }else {
+              jedisSortedSets.zincrby(HOT_SEARCH,1,searchParam);
+          }
+
         }else {
             if(Objects.equals(status,"all")){
                 isAll=true;
@@ -739,6 +751,12 @@ moocActorTMapper.deleteBatchIds(actorIdList);
       }
 
         return true;
+    }
+
+    @Override
+    public Set<String> list5HotSearch() {
+        Set<String> zrevrange = jedisSortedSets.zrevrange(HOT_SEARCH, 0, 4);
+        return zrevrange;
     }
 
 }

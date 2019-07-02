@@ -46,7 +46,7 @@ public class RabbitSender {
             MessageException messageException=new MessageException();
             messageException.setStatus(0);
             messageException.setOrderId(new String(message.getBody()));
-            messageException.setId((Integer) message.getMessageProperties().getHeaders().get("messageId"));
+            messageException.setId(String.valueOf((Integer) message.getMessageProperties().getHeaders().get("messageId")));
             messageExceptionMapper.insert(messageException);
             System.err.println("return exchange :"+s1+",routingKey :"+s2+",replayCode :"+i+",replayText :"+s);
         }
@@ -58,7 +58,7 @@ public class RabbitSender {
 //            设置编码
             messageProperties.setContentEncoding("utf-8");
 //            设置过期时间10*1000毫秒
-            messageProperties.setExpiration("60000");
+            messageProperties.setExpiration("600000");
             return message;
         };
 //生成全局唯一消息id
@@ -66,7 +66,7 @@ public class RabbitSender {
         long messageId = snowFlake.nextId();
         jedisStrings.set(messageId+"",orderId);
         Map<String,Object> properties=new HashMap<>();
-        properties.put("messageId",messageId);
+        properties.put("messageId",messageId+"");
         MessageHeaders mhs=new MessageHeaders(properties);
         Message msg=MessageBuilder.createMessage(orderId,mhs);
         rabbitTemplate.setConfirmCallback(confirmCallback);

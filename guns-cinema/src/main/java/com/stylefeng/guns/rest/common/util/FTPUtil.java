@@ -39,6 +39,7 @@ public class FTPUtil {
         try{
              initFTPClient();
             ftpClient.enterLocalPassiveMode();
+            System.err.println(System.currentTimeMillis());
             bufferedReader=new BufferedReader(new InputStreamReader(ftpClient.retrieveFileStream(fileAddress)));
         StringBuffer stringBuffer=new StringBuffer();
             while (true){
@@ -49,12 +50,16 @@ public class FTPUtil {
                 stringBuffer.append(lineStr);
            }
 ftpClient.logout();
+            System.err.println(System.currentTimeMillis());
             return stringBuffer.toString();
         }catch (Exception e){
             log.error("获取文件信息失败",e);
         }finally {
              try {
-                 bufferedReader.close();
+                 if(bufferedReader!=null){
+                     bufferedReader.close();
+                 }
+
              }catch (IOException e){
                  e.printStackTrace();
              }

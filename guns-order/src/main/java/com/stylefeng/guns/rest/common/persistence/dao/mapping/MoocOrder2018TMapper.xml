@@ -62,6 +62,7 @@ AND o.UUID = #{orderId}
         SELECT
 	o.UUID AS orderId,
 	h.film_name AS filmName,
+	h.img_address as filmPoster,
 	CONCAT(
 		DATE_FORMAT(o.order_time, '%y年%m月%d日'),
 		' ',
@@ -69,7 +70,7 @@ AND o.UUID = #{orderId}
 	) AS fieldTime,
 	c.cinema_name AS cinemaName,
 	o.seats_name AS seatsName,
-	o.order_price AS orderPirce,
+	o.order_price AS orderPrice,
 	UNIX_TIMESTAMP(o.order_time) AS orderTimestamp
 FROM
 	mooc_order_2018_t o,

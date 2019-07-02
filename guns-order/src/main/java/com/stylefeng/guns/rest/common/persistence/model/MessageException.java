@@ -2,7 +2,9 @@ package com.stylefeng.guns.rest.common.persistence.model;
 
 import com.baomidou.mybatisplus.activerecord.Model;
 import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.IdType;
 
 import java.io.Serializable;
 
@@ -12,20 +14,14 @@ import java.io.Serializable;
  * </p>
  *
  * @author gongyu
- * @since 2019-06-25
+ * @since 2019-06-26
  */
 @TableName("message_exception")
 public class MessageException extends Model<MessageException> {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 消息全局唯一ID
-     */
-    private Integer id;
-    /**
-     * 异常订单ID
-     */
+    @TableId(value = "id",type = IdType.INPUT)
+    private String id;
     @TableField("order_id")
     private String orderId;
     /**
@@ -34,11 +30,11 @@ public class MessageException extends Model<MessageException> {
     private Integer status;
 
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

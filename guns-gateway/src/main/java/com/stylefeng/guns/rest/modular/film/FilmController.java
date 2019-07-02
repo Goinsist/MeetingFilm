@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -31,6 +32,7 @@ public class FilmController {
     private FilmServiceApi filmServiceApi;
     @Reference(interfaceClass = FilmAsyncServiceApi.class,async = true,check = false)
     private FilmAsyncServiceApi filmAsyncServiceApi;
+
     //获取首页信息接口
     /*
     网关:
@@ -358,16 +360,16 @@ return null;
         }
         return ResponseVO.success(currentPage,nums,"http://img.meetingshop.cn/",filmDetailVOResult);
     }else {
-        FilmDetailVO filmDetail=filmServiceApi.getFilmDetail("0",0,0,isList,searchType,searchParam).get(0);
-
-        if(filmDetail==null){
-            return ResponseVO.serviceFail("没有可查询的影片");
-        }else if(filmDetail.getFilmId()==null||filmDetail.getFilmId().trim().length()==0){
-            return ResponseVO.serviceFail("没有可查询的影片");
+        List<FilmDetailVO> filmDetail=filmServiceApi.getFilmDetail("0",0,0,isList,searchType,searchParam);
+        List<FilmDetailVO> filmDetailVOResult=new ArrayList<>();
+        for(FilmDetailVO filmDetailVO:filmDetail){
+            String filmId=filmDetailVO.getFilmId();
+            filmDetailVO= getFilmDetailInfo04(false,filmId,filmDetailVO);
+            filmDetailVO.setImgAddress("http://img.gongyu91.cn"+filmDetailVO.getImgAddress());
+            filmDetailVOResult.add(filmDetailVO);
         }
-        String filmId=filmDetail.getFilmId();
-        filmDetail= getFilmDetailInfo04(false,filmId,filmDetail);
-        return ResponseVO.success("http://img.meetingshop.cn/",filmDetail);
+
+        return ResponseVO.success("http://img.meetingshop.cn/",filmDetailVOResult);
     }
 
 
@@ -462,5 +464,11 @@ if(isList){
 //组织成返回值
         filmDetail.setInfo04(infoRequestVO);
         return filmDetail;
+    }
+
+    @RequestMapping(value = "list5HotSearch",method = RequestMethod.GET)
+    public ResponseVO list5HotSearch(){
+        Set<String> strings = filmServiceApi.list5HotSearch();
+        return ResponseVO.success(strings);
     }
 }

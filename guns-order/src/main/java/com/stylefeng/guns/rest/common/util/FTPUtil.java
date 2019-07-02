@@ -7,10 +7,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.awt.image.ImagingOpException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 @Slf4j
@@ -56,7 +54,10 @@ ftpClient.logout();
             log.error("获取文件信息失败",e);
         }finally {
              try {
-                 bufferedReader.close();
+                 if(bufferedReader!=null){
+                     bufferedReader.close();
+                 }
+
              }catch (IOException e){
                  e.printStackTrace();
              }

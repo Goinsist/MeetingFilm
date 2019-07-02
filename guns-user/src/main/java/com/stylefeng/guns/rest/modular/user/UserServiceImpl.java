@@ -88,19 +88,16 @@ private MoocUserTMapper moocUserTMapper;
 
     private UserInfoModel do2UserInfo(MoocUserT moocUserT){
         UserInfoModel userInfoModel=new UserInfoModel();
-        userInfoModel.setUuid(moocUserT.getUuid());
-        userInfoModel.setHeadAddress(moocUserT.getHeadUrl());
-        userInfoModel.setPhone(moocUserT.getUserPhone());
-        userInfoModel.setUpdateTime(moocUserT.getUpdateTime().getTime());
+
+
+
+
         userInfoModel.setEmail(moocUserT.getEmail());
         userInfoModel.setUsername(moocUserT.getUserName());
         userInfoModel.setNickname(moocUserT.getNickName());
-        userInfoModel.setLifeState(""+moocUserT.getLifeState());
-        userInfoModel.setBirthday(moocUserT.getBirthday());
-        userInfoModel.setAddress(moocUserT.getAddress());
-        userInfoModel.setSex(moocUserT.getUserSex());
-        userInfoModel.setBeginTime(moocUserT.getBeginTime().getTime());
-        userInfoModel.setBiography(moocUserT.getBiography());
+
+
+
 
 
         return userInfoModel;

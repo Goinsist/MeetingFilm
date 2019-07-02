@@ -166,12 +166,26 @@ public class OrderServiceImpl2019 implements OrderServiceAPI {
             return null;
         }else {
             List<OrderVO> ordersByUserId = moocOrder2019TMapper.getOrdersByUserId(userId);
-            if(ordersByUserId==null&&ordersByUserId.size()==0){
+            for(OrderVO orderVO:ordersByUserId){
+                String seatsName=   orderVO.getSeatsName();
+                int ticketNum=1;
+
+                for(int i=0;i<seatsName.length();i++){
+                    if(','==seatsName.charAt(i)){
+                        ticketNum++;
+                    }
+                }
+                orderVO.setFilmPoster("http://img.gongyu91.cn"+orderVO.getFilmPoster());
+                orderVO.setTicketNum(""+ticketNum);
+            }
+
+            if(ordersByUserId.size()==0){
                 result.setTotal(0);
                 result.setRecords(new ArrayList<>());
                 return result;
             }else {
                 //获取订单总数
+
                 EntityWrapper<MoocOrder2019T> entityWrapper=new EntityWrapper<>();
                 entityWrapper.eq("order_user",userId);
                 Integer counts=  moocOrder2019TMapper.selectCount(entityWrapper);

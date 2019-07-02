@@ -1,8 +1,11 @@
 package com.stylefeng.guns.rest.common.persistence.model;
 
-import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.activerecord.Model;
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.IdType;
+
 import java.io.Serializable;
 
 /**
@@ -11,41 +14,35 @@ import java.io.Serializable;
  * </p>
  *
  * @author gongyu
- * @since 2019-06-25
+ * @since 2019-06-26
  */
 @TableName("message_manage")
 public class MessageManage extends Model<MessageManage> {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 消息全局唯一id
-     */
-    private Integer id;
-    /**
-     * 订单全局唯一id
-     */
+    @TableId(value = "id",type = IdType.INPUT)
+    private String id;
     @TableField("order_id")
-    private Integer orderId;
+    private String orderId;
     /**
      * 0-消息未消费,1-消息已消费
      */
     private Integer stauts;
 
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Integer getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 

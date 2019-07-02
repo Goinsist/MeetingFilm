@@ -31,9 +31,20 @@ mybatis-plus:
     multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 spring:
+#springbootadmin监控注册中心
+  boot:
+      admin:
+        client:
+          url: http://localhost:9110
   application:
-      name: meeting-user
+      name: meeting-alipay
   dubbo:
       server: true
       registry: zookeeper://localhost:2181
@@ -49,4 +60,4 @@ spring:
 logging:
   level.root: info
   level.com.stylefeng: debug
-  file: H:/打造仿猫眼项目 以Dubbo为核心解锁微服务视频教程/coding-273-master/coding-273/课程资料/guns数据依赖/naan1993-guns-master/guns/log/guns-alipay.log
+  file: /root/meetingfilm/log/alipay.log

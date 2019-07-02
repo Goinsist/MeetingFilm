@@ -7,6 +7,7 @@ import com.stylefeng.guns.rest.common.exception.BizExceptionEnum;
 import com.stylefeng.guns.rest.config.properties.JwtProperties;
 import com.stylefeng.guns.rest.modular.auth.util.JwtTokenUtil;
 import io.jsonwebtoken.JwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.io.IOException;
  * @author fengshuonan
  * @Date 2017/8/24 14:04
  */
+@Slf4j
 public class AuthFilter extends OncePerRequestFilter {
 
     private final Log logger = LogFactory.getLog(this.getClass());
@@ -36,6 +38,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+       log.info("请求路径: "+request.getServletPath());
         if (request.getServletPath().equals("/" + jwtProperties.getAuthPath())) {
             chain.doFilter(request, response);
             return;

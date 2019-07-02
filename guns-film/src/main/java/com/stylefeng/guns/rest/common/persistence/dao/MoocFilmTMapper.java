@@ -16,7 +16,7 @@ import java.util.List;
  * @since 2019-04-10
  */
 public interface MoocFilmTMapper extends BaseMapper<MoocFilmT> {
-List<FilmDetailVO> getFilmDetailListOrByName(@Param("isList") boolean isList,@Param("filmName") String filmName);
+List<FilmDetailVO> getFilmDetailByName(@Param("isList") boolean isList,@Param("filmName") String filmName);
 List<FilmDetailVO> getFilmDetailListOrById(@Param("isAll") boolean isAll,@Param("status") char[] status,@Param("rowIndex") int rowIndex,@Param("pageSize") int pageSize,@Param("isList") boolean isList,@Param("uuid") String uuid);
 List<Integer> getAllFilmId();
 int getFilmCountByStatus(@Param("status") char[] status);

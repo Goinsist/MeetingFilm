@@ -151,7 +151,19 @@ private double getTotalPrice(int solds,double filmPrice){
             return null;
         }else {
             List<OrderVO> ordersByUserId = moocOrder2017TMapper.getOrdersByUserId(userId);
-            if(ordersByUserId==null&&ordersByUserId.size()==0){
+            for(OrderVO orderVO:ordersByUserId){
+                String seatsName=   orderVO.getSeatsName();
+                int ticketNum=1;
+
+                for(int i=0;i<seatsName.length();i++){
+                    if(','==seatsName.charAt(i)){
+                        ticketNum++;
+                    }
+                }
+                orderVO.setFilmPoster("http://img.gongyu91.cn"+orderVO.getFilmPoster());
+                orderVO.setTicketNum(""+ticketNum);
+            }
+            if(ordersByUserId.size()==0){
                    result.setTotal(0);
                    result.setRecords(new ArrayList<>());
                   return result;

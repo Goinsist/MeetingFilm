@@ -20,7 +20,7 @@
         <module>guns-cinema</module>
         <module>guns-order</module>
         <module>guns-alipay</module>
-        <module>guns-elasticsearch</module>
+        <module>guns-monitor</module>
 
     </modules>
 
