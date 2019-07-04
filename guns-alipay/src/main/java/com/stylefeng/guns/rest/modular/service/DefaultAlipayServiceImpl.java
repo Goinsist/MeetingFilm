@@ -160,7 +160,7 @@ if(filePath==null||filePath.trim().length()==0){
 
 
                 // 需要修改为运行机器上的路径
-                 filePath = String.format("H:/qrcode/qr-%s.png",
+                 filePath = String.format("/root/qrcode/qr-%s.png",
                         response.getOutTradeNo());
                 //获取随机五位数
                 QiniuCloudUtil qiniuCloudUtil=new QiniuCloudUtil();

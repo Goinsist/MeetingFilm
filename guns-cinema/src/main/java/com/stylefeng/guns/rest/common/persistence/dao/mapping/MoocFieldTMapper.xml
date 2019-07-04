@@ -61,6 +61,7 @@ FROM
 	mooc_hall_film_info_t info
 , mooc_field_t f WHERE f.film_id = info.film_id
 AND f.cinema_id = #{cinemaId}
+AND left(f.begin_time,10)>=NOW()
 
 </select>
 

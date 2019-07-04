@@ -281,13 +281,19 @@ return  0;
         MoocHallDictT moocHallDictT = moocHallDictTMapper.selectById(hallId);
         String seatPath=moocHallDictT.getSeatAddress();
         String fileStrByAddress = ftpUtil.getFileStrByAddress(seatPath);
+        MoocFieldT moocFieldT = moocFieldTMapper.selectById(fieldId);
+        String price= String.valueOf(moocFieldT.getPrice());
         String soldSeatsByFieldId = orderServiceAPI.getSoldSeatsByFieldId(Integer.valueOf(fieldId));
         //将影厅的json字符串转换为json对象
         JSONObject jsonObject= JSONObject.parseObject(fileStrByAddress);
+        List<JSONObject> seatList= (List<JSONObject>) jsonObject.get("seatList");
+        for(JSONObject a:seatList){
+            a.put("price",price);
+        }
         if(soldSeatsByFieldId!=null){
             String[] soldSeats = soldSeatsByFieldId.split(",");
 
-            List<JSONObject> seatList= (List<JSONObject>) jsonObject.get("seatList");
+
 
             for(JSONObject s:seatList){
                 for(String soldSeat:soldSeats){
