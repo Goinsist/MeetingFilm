@@ -1,4 +1,4 @@
-# MeetingFilm仿猫眼java后台
+# MeetingFilm仿猫眼电影java后台
 
 ## 项目介绍
 本项目是MeetingFilm的java后台服务,基于SpringBoot+SSM框架构建,基于maven多模块引入Dubbo实现分布式系统;
