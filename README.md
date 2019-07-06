@@ -2,9 +2,8 @@
 
 ## 项目介绍
 本项目是MeetingFilm的java后台服务,基于SpringBoot+SSM框架构建,基于maven多模块引入Dubbo实现分布式系统;
-前台支持[MeetingFilm-vue](https://github.com/Goinsist/MeetingFilm-vue):基于vue构建,调用了[movie-trailer](https://github.com/Goinsist/movie-trailer),[seat-select](https://github.com/zenghao0219/seat-select);
-由于前端是借用了上述的组件，所以前端代码有很多冗余代码,而且选座模块的自适应布局本人不会修改，所以有点会有点不方便操作,
-希望前端熟练的朋友能帮助完善修改下前端代码。
+前台支持[MeetingFilm-vue](https://github.com/Goinsist/MeetingFilm-vue):基于vue构建,移动端rem自适应,调用了[movie-trailer](https://github.com/Goinsist/movie-trailer),[seat-select](https://github.com/zenghao0219/seat-select);
+
 
 ## 项目移动端体验
 
