@@ -52,11 +52,11 @@ public class FilmController {
 
     //获取正在热映的电影
 
-filmIndexVo.setHotFilms(filmServiceApi.getHotFilms(true,8,1,1,99,99,99));
+filmIndexVo.setHotFilms(filmServiceApi.getHotFilms(true,6,1,1,99,99,99));
     //即将上映的film
-filmIndexVo.setSoonFilms(filmServiceApi.getSoonFilms(true,8,1,1,99,99,99));
+filmIndexVo.setSoonFilms(filmServiceApi.getSoonFilms(true,6,1,1,99,99,99));
    //获取经典电影
-    filmIndexVo.setClassicFilms(filmServiceApi.getClassicFilms(8,1,1,99,99,99));
+    filmIndexVo.setClassicFilms(filmServiceApi.getClassicFilms(6,1,1,99,99,99));
     //票房排行榜
 filmIndexVo.setBoxRanking(filmServiceApi.getBoxRanking());
 

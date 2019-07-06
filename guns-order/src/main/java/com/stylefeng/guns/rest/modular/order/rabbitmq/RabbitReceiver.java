@@ -33,6 +33,12 @@ public class RabbitReceiver  {
     @RabbitHandler
     public  void onMessage(Message message, Channel channel)throws Exception{
         try{
+            MessageManage messageManage1 = messageManageMapper.selectById(message.getHeaders().get("messageId") + "");
+            Long deliveryTag=(Long)message.getHeaders().get(AmqpHeaders.DELIVERY_TAG);
+            if(messageManage1!=null){
+
+                channel.basicReject(deliveryTag,false);
+            }
             System.err.println("线程id: "+Thread.currentThread().getId()+",线程名: "+Thread.currentThread().getName());
             System.err.println("--------------------------");
 
@@ -50,11 +56,14 @@ public class RabbitReceiver  {
 
             moocOrder2019TMapper.delete(entityWrapper);
 
-            Long deliveryTag=(Long)message.getHeaders().get(AmqpHeaders.DELIVERY_TAG);
+
             //手工ACK
             //deleveryTag表示该信道下消息的唯一标识
-
-
+            //消息去重
+            MessageManage messageManage=new MessageManage();
+            messageManage.setId(message.getHeaders().get("messageId")+"");
+            messageManage.setOrderId((String)message.getPayload());
+            messageManage.setStauts(1);
             channel.basicAck(deliveryTag,false);
 
         }catch (Exception e){
