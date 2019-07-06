@@ -102,7 +102,7 @@ AND f.UUID = #{fieldId}
     </select>
 <select id="getCinemasByFilmId" resultType="com.stylefeng.guns.api.cinema.vo.CinemaWithFilmVO">
 
- select cinema.UUID as cinemaId,cinema.cinema_name as cinemaName,cinema.cinema_address as cinemaAddress,min(field.price) as filmMinPrice,GROUP_CONCAT(DATE_FORMAT(field.begin_time,'%H:%m')SEPARATOR ',')as filmRound from mooc_cinema_t cinema, mooc_field_t field
+ select cinema.UUID as cinemaId,cinema.cinema_name as cinemaName,cinema.cinema_address as cinemaAddress,min(field.price) as filmMinPrice,GROUP_CONCAT(SUBSTRING(field.begin_time,-8,5)SEPARATOR ',')as filmRound from mooc_cinema_t cinema, mooc_field_t field
 where field.cinema_id=cinema.UUID and field.film_id=#{filmId} and DATE_FORMAT(field.begin_time,'%Y-%m-%d')=#{releaseDate} group by cinemaName,cinemaId,cinemaAddress
 
 
