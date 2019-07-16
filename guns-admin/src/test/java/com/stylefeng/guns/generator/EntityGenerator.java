@@ -29,7 +29,7 @@ public class EntityGenerator {
 
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
-        gc.setOutputDir("H:\\打造仿猫眼项目 以Dubbo为核心解锁微服务视频教程\\coding-273-master\\coding-273\\课程资料\\guns数据依赖\\naan1993-guns-master\\guns\\guns-admin\\src\\main\\java");//这里写你自己的java目录
+        gc.setOutputDir("D:\\tmp\\guns\\guns-rest\\src\\main\\java");//这里写你自己的java目录
         gc.setFileOverride(true);//是否覆盖
         gc.setActiveRecord(true);
         gc.setEnableCache(false);// XML 二级缓存

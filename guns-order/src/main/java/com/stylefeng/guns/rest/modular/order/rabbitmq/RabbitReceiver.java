@@ -33,6 +33,7 @@ public class RabbitReceiver  {
     @RabbitHandler
     public  void onMessage(Message message, Channel channel)throws Exception{
         try{
+
             MessageManage messageManage1 = messageManageMapper.selectById(message.getHeaders().get("messageId") + "");
             Long deliveryTag=(Long)message.getHeaders().get(AmqpHeaders.DELIVERY_TAG);
             if(messageManage1!=null){
@@ -61,9 +62,10 @@ public class RabbitReceiver  {
             //deleveryTag表示该信道下消息的唯一标识
             //消息去重
             MessageManage messageManage=new MessageManage();
-            messageManage.setId(message.getHeaders().get("messageId")+"");
+            messageManage.setId(messageId);
             messageManage.setOrderId((String)message.getPayload());
             messageManage.setStauts(1);
+            messageManageMapper.insertAllColumn(messageManage);
             channel.basicAck(deliveryTag,false);
 
         }catch (Exception e){

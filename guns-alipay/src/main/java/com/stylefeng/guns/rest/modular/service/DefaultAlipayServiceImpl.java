@@ -2,9 +2,12 @@ package com.stylefeng.guns.rest.modular.service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.stylefeng.guns.api.alipay.AliPayServiceAPI;
-import com.stylefeng.guns.api.alipay.vo.AliPayInfoVO;
 import com.stylefeng.guns.api.alipay.vo.AliPayResultVO;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
@@ -26,7 +29,11 @@ import com.stylefeng.guns.rest.modular.alipay.utils.ZxingUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,7 +47,7 @@ import java.util.List;
 public class DefaultAlipayServiceImpl implements AliPayServiceAPI {
     @Autowired
     private FTPUtil ftpUtil;
-   @Reference(interfaceClass = OrderServiceAPI.class,check = false,group = "order2019",filter = "tracing")
+    @Reference(interfaceClass = OrderServiceAPI.class,check = false,group = "order2019",filter = "tracing")
     private OrderServiceAPI orderServiceAPI;
     // 支付宝当面付2.0服务
     private static AlipayTradeService tradeService;
@@ -71,18 +78,49 @@ public class DefaultAlipayServiceImpl implements AliPayServiceAPI {
                 .setFormat("json").build();
     }
     @Override
-    public AliPayInfoVO getQRCode(String orderId) {
-        //获取二维码地址
-      String filePath=  trade_precreate(orderId);
-      //如果地址为空，则表示获取二维码不成功
-if(filePath==null||filePath.trim().length()==0){
-    return null;
-}else {
-    AliPayInfoVO aliPayInfoVO=new AliPayInfoVO();
-    aliPayInfoVO.setOrderId(orderId);
-    aliPayInfoVO.setQRCodeAddress(filePath);
-    return aliPayInfoVO;
-}
+    public void getQRCode(String orderId) {
+        HttpServletResponse response=((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+        HttpServletRequest request=((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        AlipayClient alipayClient = new DefaultAlipayClient(Configs.getOpenApiDomain(),Configs.getAppid(),Configs.getPrivateKey(),"json", "utf-8", Configs.getAlipayPublicKey(), Configs.getSignType()); //获得初始化的AlipayClient
+        AlipayTradeWapPayRequest alipayRequest = new AlipayTradeWapPayRequest();//创建API对应的request
+        alipayRequest.setReturnUrl("http://film.gongyu91.cn/paysuccess");
+        OrderVO orderVO=orderServiceAPI.getOrderInfoById(orderId);
+        String filmName=orderVO.getFilmName();
+        int total_amount= Integer.parseInt(orderVO.getOrderPrice());
+
+//        alipayRequest.setNotifyUrl("http://domain.com/CallBack/notify_url.jsp");//在公共参数中设置回跳和通知地址
+        alipayRequest.setBizContent("{" +
+                "    \"out_trade_no\":\""+orderId+"\"," +
+                "    \"total_amount\":"+total_amount+"," +
+                "    \"subject\":\"Meeting院线购票业务\"," +
+                "    \"product_code\":\""+filmName+"\"" +
+                "  }");//填充业务参数
+        String form = null; //调用SDK生成表单
+        try {
+            form = alipayClient.pageExecute(alipayRequest).getBody();
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
+        response.setContentType("text/html;charset=" + "utf-8");
+        try {
+            response.getWriter().write(form);//直接将完整的表单html输出到页面
+            response.getWriter().flush();
+            response.getWriter().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        //获取二维码地址
+//      String filePath=  trade_precreate(orderId);
+//      //如果地址为空，则表示获取二维码不成功
+//if(filePath==null||filePath.trim().length()==0){
+//    return null;
+//}else {
+//    AliPayInfoVO aliPayInfoVO=new AliPayInfoVO();
+//    aliPayInfoVO.setOrderId(orderId);
+//    aliPayInfoVO.setQRCodeAddress(filePath);
+//    return aliPayInfoVO;
+//}
 
     }
 
@@ -124,7 +162,7 @@ if(filePath==null||filePath.trim().length()==0){
 
         // 业务扩展参数，目前可添加由支付宝分配的系统商编号(通过setSysServiceProviderId方法)，详情请咨询支付宝技术支持
         ExtendParams extendParams = new ExtendParams();
-  //      extendParams.setSysServiceProviderId("2088100200300400500");
+        //      extendParams.setSysServiceProviderId("2088100200300400500");
 
         // 支付超时，定义为120分钟
         String timeoutExpress = "120m";
@@ -148,9 +186,8 @@ if(filePath==null||filePath.trim().length()==0){
                 .setTimeoutExpress(timeoutExpress)
                 //支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                 //TODO 扫码支付后回调业务 不能使用localhost 待线上部署后实现
-//                .setNotifyUrl("http://localhost/order/getPayResult")
+                .setNotifyUrl("http://film.gongyu91.cn/order/getPayResult")
                 .setGoodsDetailList(goodsDetailList);
-
         AlipayF2FPrecreateResult result = tradeService.tradePrecreate(builder);
         switch (result.getTradeStatus()) {
             case SUCCESS:
@@ -160,12 +197,12 @@ if(filePath==null||filePath.trim().length()==0){
 
 
                 // 需要修改为运行机器上的路径
-                 filePath = String.format("/root/qrcode/qr-%s.png",
+                filePath = String.format("/root/qrcode/qr-%s.png",
                         response.getOutTradeNo());
                 //获取随机五位数
                 QiniuCloudUtil qiniuCloudUtil=new QiniuCloudUtil();
 
-                 filmQrCodePath="qrCode/"+"qr-"+response.getOutTradeNo();
+                filmQrCodePath="qrCode/"+"qr-"+response.getOutTradeNo();
 
 //                 String fileName=String.format("qr-%s.png",response.getOutTradeNo());
                 log.info("filePath:" + filePath);
@@ -199,10 +236,10 @@ if(filePath==null||filePath.trim().length()==0){
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-              if(imgUrl==null){
-                  filePath="";
-                  log.error("二维码上传失败");
-              }
+                if(imgUrl==null){
+                    filePath="";
+                    log.error("二维码上传失败");
+                }
                 break;
 
             case FAILED:
@@ -223,14 +260,14 @@ if(filePath==null||filePath.trim().length()==0){
     @Override
     public AliPayResultVO getOrderStatus(String orderId) {
         //获取订单支付状态
-          boolean isSuccess=  trade_query(orderId);
-          if(isSuccess){
-              AliPayResultVO aliPayResultVO=new AliPayResultVO();
-              aliPayResultVO.setOrderId(orderId);
-              aliPayResultVO.setOrderStatus(1);
-              aliPayResultVO.setOrderMsg("支付成功");
-              return aliPayResultVO;
-          }
+        boolean isSuccess=  trade_query(orderId);
+        if(isSuccess){
+            AliPayResultVO aliPayResultVO=new AliPayResultVO();
+            aliPayResultVO.setOrderId(orderId);
+            aliPayResultVO.setOrderStatus(1);
+            aliPayResultVO.setOrderMsg("支付成功");
+            return aliPayResultVO;
+        }
         return null;
     }
 
@@ -249,7 +286,7 @@ if(filePath==null||filePath.trim().length()==0){
             case SUCCESS:
                 log.info("查询返回该订单支付成功: )");
 //当订单支付成功状态时，修改订单状态为1
-flag=orderServiceAPI.paySuccess(orderId);
+                flag=orderServiceAPI.paySuccess(orderId);
                 break;
 
             case FAILED:
